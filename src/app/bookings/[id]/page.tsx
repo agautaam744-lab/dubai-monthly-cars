@@ -1,18 +1,11 @@
-import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
-import {
-  ChevronLeft,
-  Car,
-  Calendar,
-  Clock,
-  MapPin,
-  ShieldCheck,
-  CreditCard,
-  FileText,
-} from 'lucide-react'
+import { notFound } from 'next/navigation'
+import { ChevronLeft, Car, Calendar, User, CreditCard, FileText } from 'lucide-react'
+import { requireAdmin } from '@/lib/admin'
 
-type Props = { params: Promise<{ id: string }> }
+type Props = {
+  params: Promise<{ id: string }>
+}
 
 function formatAED(value: number) {
   return new Intl.NumberFormat('en-AE', {
@@ -24,10 +17,7 @@ function formatAED(value: number) {
 
 export default async function BookingDetailPage({ params }: Props) {
   const { id } = await params
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect(`/login?next=/bookings/${id}`)
+  const { supabase } = await requireAdmin()
 
   const { data: booking } = await supabase
     .from('bookings')
@@ -36,29 +26,23 @@ export default async function BookingDetailPage({ params }: Props) {
       status,
       start_date,
       duration_months,
-      delivery_type,
-      delivery_address,
       monthly_price_aed,
       deposit_aed,
       total_add_ons_aed,
       agreement_signed_at,
-      vehicles ( make, model, year, category, location, plate_number ),
-      pricing_tiers ( name, mileage_limit_km )
+      created_at,
+      vehicles ( make, model, year, plate_number ),
+      pricing_tiers ( name, mileage_limit_km ),
+      profiles:customer_id ( full_name, email, phone )
     `)
     .eq('id', id)
-    .eq('customer_id', user.id)
     .single()
 
   if (!booking) notFound()
 
-  const vehicle = Array.isArray(booking.vehicles)
-    ? booking.vehicles[0]
-    : booking.vehicles
-  const tier = Array.isArray(booking.pricing_tiers)
-    ? booking.pricing_tiers[0]
-    : booking.pricing_tiers
-
-  if (!vehicle) notFound()
+  const vehicle = Array.isArray(booking.vehicles) ? booking.vehicles[0] : booking.vehicles
+  const tier = Array.isArray(booking.pricing_tiers) ? booking.pricing_tiers[0] : booking.pricing_tiers
+  const customer = Array.isArray(booking.profiles) ? booking.profiles[0] : booking.profiles
 
   const total =
     Number(booking.monthly_price_aed || 0) +
@@ -66,135 +50,95 @@ export default async function BookingDetailPage({ params }: Props) {
     Number(booking.total_add_ons_aed || 0)
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 min-h-screen bg-[var(--background)]">
+    <div className="p-6 sm:p-8">
       <Link
-        href="/bookings"
-        className="inline-flex items-center gap-1 text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
+        href="/admin/bookings"
+        className="inline-flex items-center gap-1 text-sm text-[var(--muted-foreground)] transition hover:text-[var(--foreground)]"
       >
         <ChevronLeft className="h-4 w-4" />
         Back to Bookings
       </Link>
 
-      <h1 className="mt-6 text-3xl font-bold">Booking Details</h1>
-      <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-        #{booking.id.slice(0, 8).toUpperCase()}
-      </p>
+      <div className="mt-6 mb-8">
+        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--accent)]">
+          Booking Details
+        </p>
+        <h1 className="mt-2 text-3xl font-bold">
+          {vehicle?.make} {vehicle?.model}
+        </h1>
+        <p className="mt-1 font-mono text-sm text-[var(--muted-foreground)]">
+          #{booking.id.slice(0, 8).toUpperCase()}
+        </p>
+      </div>
 
-      {/* Vehicle Info */}
-      <section className="mt-8 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
-        <div className="flex items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--accent)]/10">
-            <Car className="h-6 w-6 text-[var(--accent)]" />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
+          <div className="mb-4 flex items-center gap-2">
+            <User className="h-5 w-5 text-[var(--accent)]" />
+            <h2 className="font-semibold">Customer</h2>
           </div>
-          <div>
-            <h2 className="text-lg font-bold">
-              {vehicle.make} {vehicle.model}
-            </h2>
-            <p className="text-sm text-[var(--muted-foreground)]">
-              {vehicle.year ?? ''}
-              {vehicle.category ? ` · ${vehicle.category}` : ''}
-              {vehicle.plate_number ? ` · ${vehicle.plate_number}` : ''}
-            </p>
+          <div className="space-y-2 text-sm">
+            <p><span className="text-[var(--muted-foreground)]">Name:</span> {customer?.full_name ?? '—'}</p>
+            <p><span className="text-[var(--muted-foreground)]">Email:</span> {customer?.email ?? '—'}</p>
+            <p><span className="text-[var(--muted-foreground)]">Phone:</span> {customer?.phone ?? '—'}</p>
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-2 gap-5 border-t border-[var(--border)] pt-5 sm:grid-cols-4">
-          <div>
-            <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
-              <Calendar className="h-3.5 w-3.5" />
-              Start
-            </div>
-            <p className="mt-1 text-sm font-semibold">
-              {new Date(booking.start_date).toLocaleDateString('en-AE', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
+          <div className="mb-4 flex items-center gap-2">
+            <Car className="h-5 w-5 text-[var(--accent)]" />
+            <h2 className="font-semibold">Vehicle</h2>
+          </div>
+          <div className="space-y-2 text-sm">
+            <p><span className="text-[var(--muted-foreground)]">Car:</span> {vehicle?.make} {vehicle?.model} ({vehicle?.year ?? '—'})</p>
+            <p><span className="text-[var(--muted-foreground)]">Plate:</span> {vehicle?.plate_number ?? '—'}</p>
+            <p><span className="text-[var(--muted-foreground)]">Plan:</span> {tier?.name ?? 'Basic'}</p>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
+          <div className="mb-4 flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-[var(--accent)]" />
+            <h2 className="font-semibold">Rental Period</h2>
+          </div>
+          <div className="space-y-2 text-sm">
+            <p><span className="text-[var(--muted-foreground)]">Start:</span> {new Date(booking.start_date).toLocaleDateString('en-AE')}</p>
+            <p><span className="text-[var(--muted-foreground)]">Duration:</span> {booking.duration_months} month{booking.duration_months > 1 ? 's' : ''}</p>
+            <p><span className="text-[var(--muted-foreground)]">Status:</span> {booking.status.replace('_', ' ')}</p>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
+          <div className="mb-4 flex items-center gap-2">
+            <CreditCard className="h-5 w-5 text-[var(--accent)]" />
+            <h2 className="font-semibold">Payment</h2>
+          </div>
+          <div className="space-y-2 text-sm">
+            <p className="flex justify-between"><span className="text-[var(--muted-foreground)]">Monthly Rent:</span> <span className="font-medium">{formatAED(Number(booking.monthly_price_aed))}</span></p>
+            <p className="flex justify-between"><span className="text-[var(--muted-foreground)]">Deposit:</span> <span className="font-medium">{formatAED(Number(booking.deposit_aed))}</span></p>
+            <p className="flex justify-between"><span className="text-[var(--muted-foreground)]">Add-ons:</span> <span className="font-medium">{formatAED(Number(booking.total_add_ons_aed))}</span></p>
+            <p className="flex justify-between border-t border-[var(--border)] pt-2 text-base font-bold"><span>Total:</span> <span>{formatAED(total)}</span></p>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6 lg:col-span-2">
+          <div className="mb-4 flex items-center gap-2">
+            <FileText className="h-5 w-5 text-[var(--accent)]" />
+            <h2 className="font-semibold">Agreement</h2>
+          </div>
+          {booking.agreement_signed_at ? (
+            <p className="text-sm text-green-500">
+              ✓ Signed on {new Date(booking.agreement_signed_at).toLocaleDateString('en-AE', {
+                year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
               })}
             </p>
-          </div>
-          <div>
-            <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
-              <Clock className="h-3.5 w-3.5" />
-              Duration
-            </div>
-            <p className="mt-1 text-sm font-semibold">
-              {booking.duration_months} month{booking.duration_months > 1 ? 's' : ''}
+          ) : (
+            <p className="text-sm text-[var(--muted-foreground)]">
+              Agreement not signed yet.
             </p>
-          </div>
-          <div>
-            <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
-              <MapPin className="h-3.5 w-3.5" />
-              Delivery
-            </div>
-            <p className="mt-1 text-sm font-semibold">
-              {booking.delivery_type === 'pickup' ? 'Pickup' : 'Home delivery'}
-            </p>
-          </div>
-          <div>
-            <div className="flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
-              <ShieldCheck className="h-3.5 w-3.5" />
-              Plan
-            </div>
-            <p className="mt-1 text-sm font-semibold">{tier?.name ?? 'Basic'}</p>
-          </div>
+          )}
         </div>
-      </section>
-
-      {/* Payment Summary */}
-      <section className="mt-6 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
-        <h2 className="mb-4 font-semibold">Payment Summary</h2>
-        <div className="space-y-3 text-sm">
-          <div className="flex justify-between">
-            <span className="text-[var(--muted-foreground)]">Monthly rent</span>
-            <span className="font-medium">{formatAED(Number(booking.monthly_price_aed))}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-[var(--muted-foreground)]">Add-ons</span>
-            <span className="font-medium">{formatAED(Number(booking.total_add_ons_aed))}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-[var(--muted-foreground)]">Security deposit</span>
-            <span className="font-medium">{formatAED(Number(booking.deposit_aed))}</span>
-          </div>
-          <div className="flex justify-between border-t border-[var(--border)] pt-3 text-base font-bold">
-            <span>Total</span>
-            <span>{formatAED(total)}</span>
-          </div>
-        </div>
-      </section>
-
-      {/* Quick Actions */}
-      <section className="mt-6 grid gap-3 sm:grid-cols-2">
-        {!booking.agreement_signed_at && (
-          <Link
-            href={`/agreement/${booking.id}`}
-            className="flex items-center gap-3 rounded-2xl border border-orange-500/30 bg-orange-500/5 p-4 transition hover:border-orange-500/60"
-          >
-            <FileText className="h-5 w-5 text-orange-500" />
-            <div>
-              <p className="text-sm font-semibold">Sign Agreement</p>
-              <p className="text-xs text-[var(--muted-foreground)]">
-                Required before pickup
-              </p>
-            </div>
-          </Link>
-        )}
-
-        {booking.status === 'pending_payment' && (
-          <Link
-            href={`/payments?booking=${booking.id}`}
-            className="flex items-center gap-3 rounded-2xl border border-[var(--accent)]/30 bg-[var(--accent)]/5 p-4 transition hover:border-[var(--accent)]/60"
-          >
-            <CreditCard className="h-5 w-5 text-[var(--accent)]" />
-            <div>
-              <p className="text-sm font-semibold">Pay Now</p>
-              <p className="text-xs text-[var(--muted-foreground)]">
-                Complete your booking
-              </p>
-            </div>
-          </Link>
-        )}
-      </section>
-    </main>
+      </div>
+    </div>
   )
 }
