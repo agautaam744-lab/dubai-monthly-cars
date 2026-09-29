@@ -14,7 +14,8 @@ import {
   TrendingUp,
   Wrench,
   Briefcase,
-  AlertTriangle, // <-- Damage ke liye icon add kiya
+  AlertTriangle,
+  Megaphone, // <-- Marketing ke liye naya icon add kiya
 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
@@ -25,7 +26,8 @@ const links = [
   { href: '/admin/fleet', label: 'Fleet', icon: Car },
   { href: '/admin/maintenance', label: 'Maintenance', icon: Wrench },
   { href: '/admin/corporate', label: 'Corporate', icon: Briefcase },
-  { href: '/admin/damage', label: 'Damage', icon: AlertTriangle }, // <-- Naya Damage link
+  { href: '/admin/damage', label: 'Damage', icon: AlertTriangle },
+  { href: '/admin/marketing', label: 'Marketing', icon: Megaphone }, // <-- Naya Marketing link add kiya
   { href: '/admin/finance', label: 'Finance', icon: DollarSign },
   { href: '/admin/analytics', label: 'Analytics', icon: TrendingUp },
   { href: '/admin/staff', label: 'Staff', icon: Users },
