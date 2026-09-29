@@ -11,6 +11,13 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'Dubai Monthly Cars | Premium Monthly Car Rental',
   description: 'Flexible monthly car rental in Dubai. Choose from Basic, Plus or Premium plans with home delivery.',
+  manifest: '/manifest.json',
+  themeColor: '#D4AF37',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'DMC Cars',
+  },
 }
 
 export default function RootLayout({

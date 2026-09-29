@@ -1,0 +1,17 @@
+{
+  "name": "Dubai Monthly Cars",
+  "short_name": "DMC Cars",
+  "description": "Premium monthly car rental in Dubai",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F9FAFB",
+  "theme_color": "#D4AF37",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}
