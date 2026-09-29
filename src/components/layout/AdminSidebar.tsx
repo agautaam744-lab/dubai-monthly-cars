@@ -12,7 +12,8 @@ import {
   BarChart3,
   ChevronLeft,
   TrendingUp,
-  Wrench, // <-- Naya icon add kiya
+  Wrench,
+  Briefcase, // <-- Corporate ke liye icon add kiya
 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
@@ -21,7 +22,8 @@ const links = [
   { href: '/admin/kyc', label: 'KYC Review', icon: FileCheck },
   { href: '/admin/bookings', label: 'Bookings', icon: CalendarCheck },
   { href: '/admin/fleet', label: 'Fleet', icon: Car },
-  { href: '/admin/maintenance', label: 'Maintenance', icon: Wrench }, // <-- Naya link add kiya
+  { href: '/admin/maintenance', label: 'Maintenance', icon: Wrench },
+  { href: '/admin/corporate', label: 'Corporate', icon: Briefcase }, // <-- Naya Corporate link add kiya
   { href: '/admin/finance', label: 'Finance', icon: DollarSign },
   { href: '/admin/analytics', label: 'Analytics', icon: TrendingUp },
   { href: '/admin/staff', label: 'Staff', icon: Users },
