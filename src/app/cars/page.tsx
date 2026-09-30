@@ -1,294 +1,40 @@
 import Link from 'next/link'
-import {
-  Search,
-  SlidersHorizontal,
-  MapPin,
-  Users,
-  Fuel,
-  Gauge,
-  CarFront,
-  RotateCcw,
-} from 'lucide-react'
+import { Search, MapPin, CarFront, RotateCcw, TriangleAlert } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import VehicleCard, {
+  getStartingPrice,
+  type CarsVehicle,
+} from './VehicleCard'
+import FilterForm from './FilterForm'
+import MobileFilterDrawer from './MobileFilterDrawer'
+import SortSelect from './SortSelect'
 
 type SearchParams = Record<string, string | string[] | undefined>
-
-type VehicleImage = {
-  id: string
-  storage_path: string
-  is_primary: boolean | null
-  sort_order: number | null
-}
-
-type PricingTier = {
-  id: string
-  name: string
-  mileage_limit_km: number
-  insurance_level: string | null
-  includes_delivery: boolean | null
-  sort_order: number | null
-}
-
-type VehiclePricing = {
-  monthly_price_aed: number | string
-  security_deposit_aed: number | string
-  pricing_tiers: PricingTier | null
-}
-
-type Vehicle = {
-  id: string
-  make: string
-  model: string
-  year: number | null
-  category: string | null
-  transmission: string | null
-  fuel_type: string | null
-  seats: number | null
-  color: string | null
-  current_mileage: number | null
-  status: string
-  location: string | null
-  description: string | null
-  vehicle_images: VehicleImage[]
-  vehicle_pricing: VehiclePricing[]
-}
 
 function getValue(value: string | string[] | undefined) {
   if (Array.isArray(value)) return value[0] ?? ''
   return value ?? ''
 }
 
-function formatAED(value: number | string) {
-  return new Intl.NumberFormat('en-AE', {
-    style: 'currency',
-    currency: 'AED',
-    maximumFractionDigits: 0,
-  }).format(Number(value))
+function toNumber(value: string) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0
 }
 
-function getStartingPrice(vehicle: Vehicle) {
-  if (!vehicle.vehicle_pricing?.length) return null
-
-  const prices = vehicle.vehicle_pricing
-    .map((item) => Number(item.monthly_price_aed))
-    .filter((price) => Number.isFinite(price))
-
-  if (!prices.length) return null
-
-  return Math.min(...prices)
-}
-
-function FilterForm({
-  mobile = false,
-  categories,
-  brands,
-  locations,
-  values,
-}: {
-  mobile?: boolean
-  categories: string[]
-  brands: string[]
-  locations: string[]
-  values: {
-    category: string
-    brand: string
-    transmission: string
-    fuel: string
-    seats: string
-    minPrice: string
-    maxPrice: string
-    location: string
+function hrefWith(
+  base: SearchParams,
+  overrides: Record<string, string | undefined>
+) {
+  const params = new URLSearchParams()
+  for (const [key, raw] of Object.entries({ ...base, ...overrides })) {
+    const value = Array.isArray(raw) ? (raw[0] ?? '') : (raw ?? '')
+    if (value) params.set(key, value)
   }
-}) {
-  return (
-    <form
-      method="GET"
-      className={
-        mobile
-          ? 'space-y-4'
-          : 'space-y-5'
-      }
-    >
-      <div>
-        <label
-          htmlFor={`${mobile ? 'mobile-' : ''}category`}
-          className="mb-2 block text-sm font-medium"
-        >
-          Category
-        </label>
-
-        <select
-          id={`${mobile ? 'mobile-' : ''}category`}
-          name="category"
-          defaultValue={values.category}
-          className="min-h-[44px] w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm outline-none focus:ring-2 focus:ring-[var(--ring)]"
-        >
-          <option value="">All categories</option>
-          {categories.map((item) => (
-            <option key={item} value={item}>
-              {item}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div>
-        <label
-          htmlFor={`${mobile ? 'mobile-' : ''}brand`}
-          className="mb-2 block text-sm font-medium"
-        >
-          Brand
-        </label>
-
-        <select
-          id={`${mobile ? 'mobile-' : ''}brand`}
-          name="brand"
-          defaultValue={values.brand}
-          className="min-h-[44px] w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm outline-none focus:ring-2 focus:ring-[var(--ring)]"
-        >
-          <option value="">All brands</option>
-          {brands.map((item) => (
-            <option key={item} value={item}>
-              {item}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div>
-        <label
-          htmlFor={`${mobile ? 'mobile-' : ''}transmission`}
-          className="mb-2 block text-sm font-medium"
-        >
-          Transmission
-        </label>
-
-        <select
-          id={`${mobile ? 'mobile-' : ''}transmission`}
-          name="transmission"
-          defaultValue={values.transmission}
-          className="min-h-[44px] w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm outline-none focus:ring-2 focus:ring-[var(--ring)]"
-        >
-          <option value="">Any transmission</option>
-          <option value="Automatic">Automatic</option>
-          <option value="Manual">Manual</option>
-        </select>
-      </div>
-
-      <div>
-        <label
-          htmlFor={`${mobile ? 'mobile-' : ''}fuel`}
-          className="mb-2 block text-sm font-medium"
-        >
-          Fuel
-        </label>
-
-        <select
-          id={`${mobile ? 'mobile-' : ''}fuel`}
-          name="fuel"
-          defaultValue={values.fuel}
-          className="min-h-[44px] w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm outline-none focus:ring-2 focus:ring-[var(--ring)]"
-        >
-          <option value="">Any fuel type</option>
-          <option value="Petrol">Petrol</option>
-          <option value="Diesel">Diesel</option>
-          <option value="Hybrid">Hybrid</option>
-          <option value="Electric">Electric</option>
-        </select>
-      </div>
-
-      <div>
-        <label
-          htmlFor={`${mobile ? 'mobile-' : ''}seats`}
-          className="mb-2 block text-sm font-medium"
-        >
-          Seats
-        </label>
-
-        <select
-          id={`${mobile ? 'mobile-' : ''}seats`}
-          name="seats"
-          defaultValue={values.seats}
-          className="min-h-[44px] w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm outline-none focus:ring-2 focus:ring-[var(--ring)]"
-        >
-          <option value="">Any</option>
-          <option value="2">2 seats</option>
-          <option value="4">4 seats</option>
-          <option value="5">5 seats</option>
-          <option value="7">7 seats</option>
-          <option value="8">8 seats</option>
-        </select>
-      </div>
-
-      <div>
-        <label
-          className="mb-2 block text-sm font-medium"
-        >
-          Monthly price
-        </label>
-
-        <div className="grid grid-cols-2 gap-2">
-          <input
-            type="number"
-            name="minPrice"
-            defaultValue={values.minPrice}
-            min="0"
-            placeholder="Min AED"
-            className="min-h-[44px] w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm outline-none focus:ring-2 focus:ring-[var(--ring)]"
-          />
-
-          <input
-            type="number"
-            name="maxPrice"
-            defaultValue={values.maxPrice}
-            min="0"
-            placeholder="Max AED"
-            className="min-h-[44px] w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm outline-none focus:ring-2 focus:ring-[var(--ring)]"
-          />
-        </div>
-      </div>
-
-      <div>
-        <label
-          htmlFor={`${mobile ? 'mobile-' : ''}location`}
-          className="mb-2 block text-sm font-medium"
-        >
-          Location
-        </label>
-
-        <select
-          id={`${mobile ? 'mobile-' : ''}location`}
-          name="location"
-          defaultValue={values.location}
-          className="min-h-[44px] w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm outline-none focus:ring-2 focus:ring-[var(--ring)]"
-        >
-          <option value="">All locations</option>
-          {locations.map((item) => (
-            <option key={item} value={item}>
-              {item}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <button
-        type="submit"
-        className="flex min-h-[46px] w-full items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-4 text-sm font-semibold text-[var(--accent-foreground)] transition hover:bg-[var(--accent-hover)]"
-      >
-        <Search className="h-4 w-4" />
-        Apply Filters
-      </button>
-
-      <Link
-        href="/cars"
-        className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-medium transition hover:bg-[var(--muted)]"
-      >
-        <RotateCcw className="h-4 w-4" />
-        Reset Filters
-      </Link>
-    </form>
-  )
+  const query = params.toString()
+  return query ? `/cars?${query}` : '/cars'
 }
+
+const VALID_SORTS = ['newest', 'price-asc', 'price-desc'] as const
 
 export default async function CarsPage({
   searchParams,
@@ -298,6 +44,7 @@ export default async function CarsPage({
   const params = await searchParams
 
   const values = {
+    q: getValue(params.q).trim(),
     category: getValue(params.category),
     brand: getValue(params.brand),
     transmission: getValue(params.transmission),
@@ -306,13 +53,17 @@ export default async function CarsPage({
     minPrice: getValue(params.minPrice),
     maxPrice: getValue(params.maxPrice),
     location: getValue(params.location),
+    sort: VALID_SORTS.includes(getValue(params.sort) as (typeof VALID_SORTS)[number])
+      ? getValue(params.sort)
+      : 'newest',
   }
 
   const supabase = await createClient()
 
   const { data, error } = await supabase
     .from('vehicles')
-    .select(`
+    .select(
+      `
       id,
       make,
       model,
@@ -344,99 +95,72 @@ export default async function CarsPage({
           sort_order
         )
       )
-    `)
+    `
+    )
     .eq('status', 'available')
     .order('created_at', { ascending: false })
 
-if (error) {
-  console.error('VEHICLES QUERY ERROR:', error)
-
-  return (
-    <main className="min-h-screen bg-[var(--background)]">
-      <div className="mx-auto max-w-3xl px-4 py-24 text-center">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--danger)]/10">
-          <CarFront className="h-8 w-8 text-[var(--danger)]" />
-        </div>
-
-        <h1 className="mt-6 text-2xl font-bold">
-          Fleet unavailable
-        </h1>
-
-        <p className="mt-3 text-[var(--muted-foreground)]">
-          Supabase returned an error while loading the vehicles.
-        </p>
-
-        <div className="mx-auto mt-6 max-w-2xl rounded-xl border border-[var(--border)] bg-[var(--card)] p-5 text-left">
-          <p className="text-xs font-bold uppercase tracking-wider text-[var(--danger)]">
-            Supabase Error
+  if (error) {
+    return (
+      <main className="min-h-screen bg-[var(--background)]">
+        <div className="mx-auto max-w-3xl px-4 py-24 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--danger)]/20 to-[var(--danger)]/5 ring-1 ring-inset ring-[var(--danger)]/20">
+            <TriangleAlert
+              className="h-8 w-8 text-[var(--danger)]"
+              aria-hidden="true"
+            />
+          </div>
+          <h1 className="mt-6 text-2xl font-bold">Unable to load cars right now</h1>
+          <p className="mx-auto mt-3 max-w-md text-[var(--muted-foreground)]">
+            Something went wrong while fetching the fleet. Please try again in
+            a moment.
           </p>
-
-          <p className="mt-3 break-words font-mono text-sm text-[var(--foreground)]">
-            {error.message}
-          </p>
-
-          {error.details && (
-            <p className="mt-3 break-words text-sm text-[var(--muted-foreground)]">
-              {error.details}
-            </p>
-          )}
-
-          {error.hint && (
-            <p className="mt-3 break-words text-sm text-[var(--muted-foreground)]">
-              Hint: {error.hint}
-            </p>
-          )}
-
-          {error.code && (
-            <p className="mt-3 font-mono text-xs text-[var(--muted-foreground)]">
-              Code: {error.code}
-            </p>
-          )}
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link
+              href="/cars"
+              className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-[var(--accent)] px-6 text-sm font-semibold text-[var(--accent-foreground)] transition hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            >
+              Try Again
+            </Link>
+            <Link
+              href="/"
+              className="inline-flex min-h-[48px] items-center justify-center rounded-xl border border-[var(--border)] px-6 text-sm font-semibold transition hover:bg-[var(--muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+            >
+              Back to Home
+            </Link>
+          </div>
         </div>
+      </main>
+    )
+  }
 
-        <Link
-          href="/"
-          className="mt-8 inline-flex min-h-[46px] items-center justify-center rounded-xl bg-[var(--accent)] px-6 text-sm font-semibold text-[var(--accent-foreground)]"
-        >
-          Back to Home
-        </Link>
-      </div>
-    </main>
-  )
-}
-
-  const allVehicles = (data ?? []) as unknown as Vehicle[]
+  const allVehicles = (data ?? []) as unknown as CarsVehicle[]
 
   const categories = Array.from(
-    new Set(
-      allVehicles
-        .map((vehicle) => vehicle.category)
-        .filter(Boolean)
-    )
+    new Set(allVehicles.map((vehicle) => vehicle.category).filter(Boolean))
   ) as string[]
 
   const brands = Array.from(
-    new Set(
-      allVehicles
-        .map((vehicle) => vehicle.make)
-        .filter(Boolean)
-    )
+    new Set(allVehicles.map((vehicle) => vehicle.make).filter(Boolean))
   ) as string[]
 
   const locations = Array.from(
-    new Set(
-      allVehicles
-        .map((vehicle) => vehicle.location)
-        .filter(Boolean)
-    )
+    new Set(allVehicles.map((vehicle) => vehicle.location).filter(Boolean))
   ) as string[]
 
-  const minPrice = Number(values.minPrice || 0)
-  const maxPrice = Number(values.maxPrice || 0)
-  const seats = Number(values.seats || 0)
+  const minPrice = toNumber(values.minPrice)
+  const maxPrice = toNumber(values.maxPrice)
+  const seats = toNumber(values.seats)
+  const query = values.q.toLowerCase()
 
-  const vehicles = allVehicles.filter((vehicle) => {
+  const filtered = allVehicles.filter((vehicle) => {
     const startingPrice = getStartingPrice(vehicle)
+
+    if (query) {
+      const haystack =
+        `${vehicle.make ?? ''} ${vehicle.model ?? ''} ${vehicle.category ?? ''}`.toLowerCase()
+      if (!haystack.includes(query)) return false
+    }
 
     if (
       values.category &&
@@ -452,24 +176,15 @@ if (error) {
       return false
     }
 
-    if (
-      values.transmission &&
-      vehicle.transmission !== values.transmission
-    ) {
+    if (values.transmission && vehicle.transmission !== values.transmission) {
       return false
     }
 
-    if (
-      values.fuel &&
-      vehicle.fuel_type !== values.fuel
-    ) {
+    if (values.fuel && vehicle.fuel_type !== values.fuel) {
       return false
     }
 
-    if (
-      seats &&
-      vehicle.seats !== seats
-    ) {
+    if (seats && vehicle.seats !== seats) {
       return false
     }
 
@@ -480,257 +195,294 @@ if (error) {
       return false
     }
 
-    if (
-      minPrice > 0 &&
-      (startingPrice === null || startingPrice < minPrice)
-    ) {
+    if (minPrice > 0 && (startingPrice === null || startingPrice < minPrice)) {
       return false
     }
 
-    if (
-      maxPrice > 0 &&
-      (startingPrice === null || startingPrice > maxPrice)
-    ) {
+    if (maxPrice > 0 && (startingPrice === null || startingPrice > maxPrice)) {
       return false
     }
 
     return true
   })
 
+  const vehicles = [...filtered].sort((a, b) => {
+    if (values.sort === 'price-asc') {
+      const pa = getStartingPrice(a)
+      const pb = getStartingPrice(b)
+      if (pa === null && pb === null) return 0
+      if (pa === null) return 1
+      if (pb === null) return -1
+      return pa - pb
+    }
+    if (values.sort === 'price-desc') {
+      const pa = getStartingPrice(a)
+      const pb = getStartingPrice(b)
+      if (pa === null && pb === null) return 0
+      if (pa === null) return 1
+      if (pb === null) return -1
+      return pb - pa
+    }
+    return 0
+  })
+
+  const activeFilterCount = [
+    values.q,
+    values.category,
+    values.brand,
+    values.transmission,
+    values.fuel,
+    values.seats,
+    values.minPrice,
+    values.maxPrice,
+    values.location,
+  ].filter(Boolean).length
+
+  const filterValues = {
+    brand: values.brand,
+    transmission: values.transmission,
+    fuel: values.fuel,
+    seats: values.seats,
+    minPrice: values.minPrice,
+    maxPrice: values.maxPrice,
+    location: values.location,
+  }
+  const preserved = {
+    q: values.q,
+    sort: values.sort === 'newest' ? '' : values.sort,
+    category: values.category,
+  }
+
   return (
     <main className="min-h-screen bg-[var(--background)]">
-      {/* =====================================================
-          HEADER
-      ====================================================== */}
+      {/* HEADER */}
+      <section className="relative overflow-hidden border-b border-[var(--border)] bg-[var(--muted)]">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_70%_at_50%_0%,rgba(201,162,39,0.14),transparent)]"
+        />
+        <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+            Dubai Monthly Fleet
+          </p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+            Find your perfect monthly car
+          </h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted-foreground)] sm:text-base">
+            Transparent monthly pricing in AED — no daily rates, no hidden
+            fees. {allVehicles.length} car{allVehicles.length === 1 ? '' : 's'}{' '}
+            ready to rent.
+          </p>
 
-      <section className="border-b border-[var(--border)] bg-[var(--muted)]">
-        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-          <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
-              Dubai Monthly Fleet
-            </p>
-
-            <h1 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-              Find your monthly car
-            </h1>
-
-            <p className="mt-4 text-base leading-7 text-[var(--muted-foreground)] sm:text-lg">
-              Choose from available vehicles and find a monthly
-              plan that fits your driving needs.
-            </p>
-          </div>
+          <form
+            method="GET"
+            role="search"
+            className="mt-5 flex max-w-xl gap-2"
+          >
+            {/* Preserve the rest of the state across searches */}
+            {values.category && (
+              <input type="hidden" name="category" value={values.category} />
+            )}
+            {values.sort !== 'newest' && (
+              <input type="hidden" name="sort" value={values.sort} />
+            )}
+            {values.brand && <input type="hidden" name="brand" value={values.brand} />}
+            {values.transmission && (
+              <input type="hidden" name="transmission" value={values.transmission} />
+            )}
+            {values.fuel && <input type="hidden" name="fuel" value={values.fuel} />}
+            {values.seats && <input type="hidden" name="seats" value={values.seats} />}
+            {values.minPrice && (
+              <input type="hidden" name="minPrice" value={values.minPrice} />
+            )}
+            {values.maxPrice && (
+              <input type="hidden" name="maxPrice" value={values.maxPrice} />
+            )}
+            {values.location && (
+              <input type="hidden" name="location" value={values.location} />
+            )}
+            <label htmlFor="cars-search" className="sr-only">
+              Search by make, model or category
+            </label>
+            <div className="relative flex-1">
+              <Search
+                className="pointer-events-none absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted-foreground)]"
+                aria-hidden="true"
+              />
+              <input
+                id="cars-search"
+                type="search"
+                name="q"
+                defaultValue={values.q}
+                placeholder="Search make, model or category…"
+                autoComplete="off"
+                className="min-h-[52px] w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] ps-11 pe-4 text-sm shadow-sm outline-none transition focus:border-[var(--accent)]/60 focus:ring-2 focus:ring-[var(--ring)]"
+              />
+            </div>
+            <button
+              type="submit"
+              className="inline-flex min-h-[52px] shrink-0 items-center justify-center rounded-2xl bg-[var(--accent)] px-6 text-sm font-semibold text-[var(--accent-foreground)] shadow-sm transition hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] active:scale-[0.98]"
+            >
+              Search
+            </button>
+          </form>
         </div>
       </section>
 
-      {/* =====================================================
-          MOBILE FILTER
-      ====================================================== */}
+      {/* CATEGORY PILLS */}
+      {categories.length > 0 && (
+        <div className="border-b border-[var(--border)] bg-[var(--background)]">
+          <nav
+            aria-label="Browse by category"
+            className="mx-auto max-w-7xl overflow-x-auto px-4 [-ms-overflow-style:none] [scrollbar-width:none] sm:px-6 lg:px-8 [&::-webkit-scrollbar]:hidden"
+          >
+            <ul className="flex gap-2 py-3">
+              <li className="shrink-0">
+                <Link
+                  href={hrefWith(params, { category: undefined })}
+                  aria-current={!values.category ? 'page' : undefined}
+                  className={`inline-flex min-h-[40px] items-center whitespace-nowrap rounded-full border px-4 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${
+                    !values.category
+                      ? 'border-[var(--accent)] bg-[var(--accent)] font-semibold text-[var(--accent-foreground)] shadow-sm'
+                      : 'border-[var(--border)] bg-[var(--card)] hover:border-[var(--accent)]/50'
+                  }`}
+                >
+                  All Cars
+                </Link>
+              </li>
+              {categories.map((category) => {
+                const active =
+                  values.category.toLowerCase() === category.toLowerCase()
+                return (
+                  <li key={category} className="shrink-0">
+                    <Link
+                      href={hrefWith(params, { category })}
+                      aria-current={active ? 'page' : undefined}
+                      className={`inline-flex min-h-[40px] items-center whitespace-nowrap rounded-full border px-4 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${
+                        active
+                          ? 'border-[var(--accent)] bg-[var(--accent)] font-semibold text-[var(--accent-foreground)] shadow-sm'
+                          : 'border-[var(--border)] bg-[var(--card)] hover:border-[var(--accent)]/50'
+                      }`}
+                    >
+                      {category}
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          </nav>
+        </div>
+      )}
 
-      <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 md:hidden lg:px-8">
-        <details className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
-          <summary className="flex min-h-[52px] cursor-pointer list-none items-center justify-between px-4 font-semibold">
-            <span className="flex items-center gap-2">
-              <SlidersHorizontal className="h-5 w-5 text-[var(--accent)]" />
-              Filters
-            </span>
-
-            <span className="text-sm text-[var(--muted-foreground)]">
-              {vehicles.length} cars
-            </span>
-          </summary>
-
-          <div className="border-t border-[var(--border)] p-4">
-            <FilterForm
-              mobile
-              categories={categories}
-              brands={brands}
-              locations={locations}
-              values={values}
-            />
-          </div>
-        </details>
-      </div>
-
-      {/* =====================================================
-          CONTENT
-      ====================================================== */}
-
-      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
-        <div className="grid gap-8 md:grid-cols-[250px_minmax(0,1fr)]">
-
+      <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+        <div className="grid gap-8 lg:grid-cols-[260px_minmax(0,1fr)]">
           {/* DESKTOP FILTER */}
-
-          <aside className="hidden h-fit rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 md:block">
-            <div className="mb-5 flex items-center gap-2">
-              <SlidersHorizontal className="h-5 w-5 text-[var(--accent)]" />
-
-              <h2 className="font-semibold">
-                Filter Cars
-              </h2>
+          <aside
+            aria-label="Filter cars"
+            className="hidden h-fit rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 lg:block lg:sticky lg:top-24"
+          >
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="font-semibold">Filters</h2>
+              {activeFilterCount > 0 && (
+                <span
+                  aria-label={`${activeFilterCount} filters active`}
+                  className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[11px] font-bold text-[var(--accent-foreground)]"
+                >
+                  {activeFilterCount}
+                </span>
+              )}
             </div>
-
             <FilterForm
-              categories={categories}
+              idPrefix="desktop"
               brands={brands}
               locations={locations}
-              values={values}
+              values={filterValues}
+              preserved={preserved}
             />
           </aside>
 
-          {/* VEHICLES */}
+          {/* RESULTS */}
+          <div className="min-w-0">
+            {/* MOBILE CONTROLS */}
+            <div className="mb-4 flex gap-2 lg:hidden">
+              <MobileFilterDrawer
+                activeCount={activeFilterCount}
+                resultsCount={vehicles.length}
+              >
+                <FilterForm
+                  idPrefix="mobile"
+                  brands={brands}
+                  locations={locations}
+                  values={filterValues}
+                  preserved={preserved}
+                />
+              </MobileFilterDrawer>
+              <SortSelect value={values.sort} />
+            </div>
 
-          <div>
-            <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-[var(--muted-foreground)]">
-                  {vehicles.length} vehicle
-                  {vehicles.length === 1 ? '' : 's'} available
-                </p>
+            {/* RESULTS TOOLBAR */}
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+              <p
+                className="text-sm text-[var(--muted-foreground)]"
+                role="status"
+                aria-live="polite"
+              >
+                <span className="text-base font-bold text-[var(--foreground)]">
+                  {vehicles.length}
+                </span>{' '}
+                car{vehicles.length === 1 ? '' : 's'} available
+                {activeFilterCount > 0 && (
+                  <>
+                    {' '}·{' '}
+                    <Link
+                      href="/cars"
+                      className="font-medium text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] rounded"
+                    >
+                      Clear {activeFilterCount} filter{activeFilterCount === 1 ? '' : 's'}
+                    </Link>
+                  </>
+                )}
+              </p>
+
+              <div className="hidden items-center gap-2 text-sm text-[var(--muted-foreground)] lg:flex">
+                <MapPin className="h-4 w-4" aria-hidden="true" />
+                Dubai
               </div>
 
-              <div className="flex items-center gap-2 text-sm text-[var(--muted-foreground)]">
-                <MapPin className="h-4 w-4" />
-                Dubai
+              <div className="hidden lg:block lg:w-56">
+                <SortSelect value={values.sort} />
               </div>
             </div>
 
             {vehicles.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--card)] px-6 py-16 text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--muted)]">
-                  <CarFront className="h-8 w-8 text-[var(--muted-foreground)]" />
+              <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--card)] px-6 py-16 text-center shadow-sm">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 ring-1 ring-inset ring-[var(--accent)]/20">
+                  <CarFront
+                    className="h-8 w-8 text-[var(--muted-foreground)]"
+                    aria-hidden="true"
+                  />
                 </div>
-
                 <h2 className="mt-5 text-xl font-semibold">
-                  No cars found
+                  No cars match your filters
                 </h2>
-
                 <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--muted-foreground)]">
-                  Try changing your filters or reset them to
-                  see the full available fleet.
+                  {values.q
+                    ? `Nothing found for “${values.q}”. Try a different search or clear your filters to see the full fleet.`
+                    : 'Try changing your filters or reset them to see the full available fleet.'}
                 </p>
-
                 <Link
                   href="/cars"
-                  className="mt-6 inline-flex min-h-[46px] items-center justify-center rounded-xl bg-[var(--accent)] px-6 text-sm font-semibold text-[var(--accent-foreground)]"
+                  className="mt-6 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-6 text-sm font-semibold text-[var(--accent-foreground)] transition hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
                 >
-                  Reset Filters
+                  <RotateCcw className="h-4 w-4" aria-hidden="true" />
+                  Clear Filters
                 </Link>
               </div>
             ) : (
-              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-                {vehicles.map((vehicle) => {
-                  const startingPrice =
-                    getStartingPrice(vehicle)
-
-                  const primaryImage =
-                    vehicle.vehicle_images
-                      ?.filter((image) => image.is_primary)
-                      ?.sort(
-                        (a, b) =>
-                          (a.sort_order ?? 0) -
-                          (b.sort_order ?? 0)
-                      )[0]
-
-                  return (
-                    <article
-                      key={vehicle.id}
-                      className="group overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
-                    >
-                      {/* IMAGE AREA */}
-
-                      <div className="relative aspect-[16/10] overflow-hidden bg-[var(--muted)]">
-                        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[var(--muted)] to-[var(--card)]">
-                          <CarFront className="h-16 w-16 text-[var(--accent)]/30" />
-                        </div>
-
-                        {primaryImage?.storage_path && (
-                          <div className="absolute left-3 top-3 rounded-full bg-[var(--background)]/90 px-3 py-1 text-xs font-medium backdrop-blur">
-                            Photo available
-                          </div>
-                        )}
-
-                        <div className="absolute right-3 top-3 rounded-full bg-[var(--success)] px-3 py-1 text-xs font-semibold text-white">
-                          Available
-                        </div>
-                      </div>
-
-                      {/* CONTENT */}
-
-                      <div className="p-5">
-                        <div className="flex items-start justify-between gap-4">
-                          <div>
-                            <p className="text-xs font-medium uppercase tracking-wider text-[var(--muted-foreground)]">
-                              {vehicle.category || 'Car'}
-                            </p>
-
-                            <h2 className="mt-1 text-xl font-semibold">
-                              {vehicle.make} {vehicle.model}
-                            </h2>
-
-                            {vehicle.year && (
-                              <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-                                {vehicle.year}
-                              </p>
-                            )}
-                          </div>
-
-                          {startingPrice !== null && (
-                            <div className="text-right">
-                              <p className="text-xs text-[var(--muted-foreground)]">
-                                From
-                              </p>
-
-                              <p className="whitespace-nowrap text-lg font-bold text-[var(--accent)]">
-                                {formatAED(startingPrice)}
-                              </p>
-
-                              <p className="text-xs text-[var(--muted-foreground)]">
-                                / month
-                              </p>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-                          <div className="flex items-center gap-2 text-[var(--muted-foreground)]">
-                            <Users className="h-4 w-4 shrink-0" />
-                            <span>
-                              {vehicle.seats || '-'} seats
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-2 text-[var(--muted-foreground)]">
-                            <Fuel className="h-4 w-4 shrink-0" />
-                            <span>
-                              {vehicle.fuel_type || '-'}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-2 text-[var(--muted-foreground)]">
-                            <Gauge className="h-4 w-4 shrink-0" />
-                            <span>
-                              {vehicle.transmission || '-'}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-2 text-[var(--muted-foreground)]">
-                            <MapPin className="h-4 w-4 shrink-0" />
-                            <span className="truncate">
-                              {vehicle.location || 'Dubai'}
-                            </span>
-                          </div>
-                        </div>
-
-                        <Link
-                          href={`/cars/${vehicle.id}`}
-                          className="mt-5 flex min-h-[46px] w-full items-center justify-center rounded-xl bg-[var(--primary)] px-4 text-sm font-semibold text-[var(--primary-foreground)] transition hover:opacity-90"
-                        >
-                          View Details
-                        </Link>
-                      </div>
-                    </article>
-                  )
-                })}
+              <div className="grid items-stretch gap-5 sm:grid-cols-2 lg:gap-6 xl:grid-cols-3">
+                {vehicles.map((vehicle) => (
+                  <VehicleCard key={vehicle.id} vehicle={vehicle} />
+                ))}
               </div>
             )}
           </div>
