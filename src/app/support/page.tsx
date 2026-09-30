@@ -111,6 +111,28 @@ export default async function SupportPage() {
           ))}
         </div>
       )}
+
+      <section className="mt-10 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
+        <h2 className="font-semibold">Help center & FAQ</h2>
+        <div className="mt-4 space-y-3 text-sm">
+          <details className="rounded-xl bg-[var(--muted)] p-4">
+            <summary className="cursor-pointer font-medium">How do monthly billing and deposits work?</summary>
+            <p className="mt-2 text-[var(--muted-foreground)]">First payment = first month + refundable deposit + one-time add-ons. Later months bill automatically. Deposit returns after final inspection minus approved charges.</p>
+          </details>
+          <details className="rounded-xl bg-[var(--muted)] p-4">
+            <summary className="cursor-pointer font-medium">How do I extend or end early?</summary>
+            <p className="mt-2 text-[var(--muted-foreground)]">Open the booking and raise a support ticket with type extension/termination. Early termination may carry fees per the agreement.</p>
+          </details>
+          <details className="rounded-xl bg-[var(--muted)] p-4">
+            <summary className="cursor-pointer font-medium">What if the car is damaged?</summary>
+            <p className="mt-2 text-[var(--muted-foreground)]">File a damage report with photos immediately. We compare pickup/return condition reports.</p>
+          </details>
+          <details className="rounded-xl bg-[var(--muted)] p-4">
+            <summary className="cursor-pointer font-medium">Roadside assistance?</summary>
+            <p className="mt-2 text-[var(--muted-foreground)]">Raise an urgent ticket or call support. 24/7 number is shared after booking activation.</p>
+          </details>
+        </div>
+      </section>
     </main>
   )
 }

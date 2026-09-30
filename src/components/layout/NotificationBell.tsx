@@ -10,7 +10,9 @@ export default function NotificationBell() {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true)
+    let channel: { unsubscribe: () => void } | null = null
 
     const load = async () => {
       const supabase = createClient()
@@ -24,13 +26,30 @@ export default function NotificationBell() {
         .eq('is_read', false)
 
       setCount(c ?? 0)
+
+      // Realtime updates instead of 60s polling
+      channel = supabase
+        .channel(`notif-bell-${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`,
+          },
+          () => {
+            load()
+          }
+        )
+        .subscribe() as unknown as { unsubscribe: () => void }
     }
 
     load()
 
-    // Refresh every 60 seconds
-    const interval = setInterval(load, 60000)
-    return () => clearInterval(interval)
+    return () => {
+      channel?.unsubscribe()
+    }
   }, [])
 
   if (!mounted) {

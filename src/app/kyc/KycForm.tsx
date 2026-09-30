@@ -76,6 +76,12 @@ export default function KycForm({
   const [uploading, setUploading] =
     useState<DocumentType | null>(null)
 
+  const [expiry, setExpiry] = useState<Record<DocumentType, string>>({
+    emirates_id: '',
+    driving_license: '',
+    passport: '',
+  })
+
   const [message, setMessage] =
     useState('')
 
@@ -137,6 +143,7 @@ export default function KycForm({
             type,
             storage_path: path,
             status: 'pending',
+            expires_at: expiry[type] || null,
           })
           .select(`
             id,
@@ -238,6 +245,25 @@ export default function KycForm({
                     <p className="mt-2 text-sm text-[var(--danger)]">
                       Reason: {document.rejection_reason}
                     </p>
+                  )}
+
+                  {document?.expires_at && (
+                    <p className="mt-1 text-xs text-[var(--muted-foreground)]">
+                      Expires: {new Date(document.expires_at).toLocaleDateString('en-AE')}
+                    </p>
+                  )}
+
+                  {!document && (
+                    <label className="mt-3 block text-xs">
+                      <span className="mb-1 block text-[var(--muted-foreground)]">Expiry date (optional)</span>
+                      <input
+                        type="date"
+                        value={expiry[type]}
+                        min={new Date().toISOString().slice(0, 10)}
+                        onChange={(e) => setExpiry((p) => ({ ...p, [type]: e.target.value }))}
+                        className="min-h-[44px] rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 text-sm outline-none"
+                      />
+                    </label>
                   )}
                 </div>
               </div>

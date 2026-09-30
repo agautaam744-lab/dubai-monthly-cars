@@ -9,7 +9,8 @@ export async function GET(request: Request) {
 
   let next = searchParams.get('next') ?? '/dashboard'
 
-  if (!next.startsWith('/')) {
+  // Safe redirect: must be a same-origin absolute path (single leading slash).
+  if (next !== '/' && !/^\/[^/\\]/.test(next)) {
     next = '/dashboard'
   }
 

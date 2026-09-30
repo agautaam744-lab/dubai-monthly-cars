@@ -30,7 +30,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     document.documentElement.lang = lang
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'
     localStorage.setItem('preferred_language', lang)
-    document.cookie = `preferred_language=${lang}; path=/; max-age=31536000`
+    document.cookie = `preferred_language=${lang}; path=/; max-age=31536000; SameSite=Lax`
   }, [lang])
 
   const setLang = (nextLang: Language) => {

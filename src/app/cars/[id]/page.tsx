@@ -149,14 +149,38 @@ export default async function VehicleDetailsPage({
 
           <div>
             <div className="relative aspect-[16/10] overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--muted)]">
-              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[var(--muted)] to-[var(--card)]">
-                <CarFront className="h-28 w-28 text-[var(--accent)]/25" />
-              </div>
+              {images.length > 0 ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/vehicle-images/${images[0].storage_path}`}
+                  alt={`${vehicle.make} ${vehicle.model}`}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  loading="eager"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[var(--muted)] to-[var(--card)]">
+                  <CarFront className="h-28 w-28 text-[var(--accent)]/25" />
+                </div>
+              )}
 
+              {images.length > 1 && (
+                <div className="absolute bottom-4 left-4 flex gap-2">
+                  {images.slice(1, 4).map((img) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      key={img.id}
+                      src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/vehicle-images/${img.storage_path}`}
+                      alt=""
+                      className="h-14 w-20 rounded-lg border border-white/40 object-cover"
+                      loading="lazy"
+                    />
+                  ))}
+                </div>
+              )}
               {images.length > 0 && (
-                <div className="absolute bottom-4 left-4 rounded-full bg-[var(--background)]/90 px-4 py-2 text-sm font-medium backdrop-blur">
+                <div className="absolute right-4 top-4 rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white backdrop-blur">
                   {images.length} photo
-                  {images.length === 1 ? '' : 's'} available
+                  {images.length === 1 ? '' : 's'}
                 </div>
               )}
             </div>

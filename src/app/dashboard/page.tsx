@@ -511,13 +511,18 @@ export default async function DashboardPage() {
                                 {mileageLimit != null && (
                                   <span className="inline-flex items-center gap-1.5">
                                     <Gauge className="h-3.5 w-3.5" />
-                                    {mileageLimit.toLocaleString()} km/month
+                                    {mileageLimit.toLocaleString()} km/month limit
                                     {currentMileage != null
-                                      ? ` · odo ${currentMileage.toLocaleString()}`
+                                      ? ` · odo ${currentMileage.toLocaleString()} km`
                                       : ''}
                                   </span>
                                 )}
                               </div>
+                              {mileageLimit != null && (
+                                <p className="mt-2 text-xs text-[var(--muted-foreground)]">
+                                  Track usage via pickup/return condition reports. Alerts trigger near 80% of the monthly cap.
+                                </p>
+                              )}
                             </div>
 
                             <div className="flex shrink-0 items-center gap-3 sm:flex-col sm:items-end">

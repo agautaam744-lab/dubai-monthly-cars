@@ -2,11 +2,31 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { ArrowRight, MapPin, CalendarDays, Search } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
+const CITY_VALUES = [
+  "Dubai Marina",
+  "Downtown Dubai",
+  "Dubai Airport (DXB)",
+  "Business Bay",
+];
+
 export default function Hero() {
   const { t } = useLanguage();
+  const router = useRouter();
+  const [city, setCity] = useState(CITY_VALUES[0]);
+  const [months, setMonths] = useState("1");
+  const [startDate, setStartDate] = useState("");
+
+  const onSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (city) params.set("location", city);
+    router.push(`/cars?${params.toString()}`);
+  };
 
   return (
     <section className="relative overflow-hidden bg-[var(--background)] pb-32 pt-28 sm:pb-40 sm:pt-36">
@@ -53,18 +73,18 @@ export default function Hero() {
 
       {/* Floating booking bar */}
       <div className="relative z-20 mx-auto mt-16 max-w-4xl px-4">
-        <form className="grid gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)]/95 p-4 shadow-xl backdrop-blur sm:grid-cols-[1.2fr_1fr_1fr_auto] sm:items-end sm:gap-3 sm:p-5">
+        <form onSubmit={onSearch} className="grid gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)]/95 p-4 shadow-xl backdrop-blur sm:grid-cols-[1.2fr_1fr_1fr_auto] sm:items-end sm:gap-3 sm:p-5">
           <label className="flex flex-col gap-1.5 text-start">
             <span className="text-xs font-medium text-[var(--foreground)]/60">
               {t("hero.pickupCity")}
             </span>
             <span className="flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2.5">
               <MapPin className="h-4 w-4 shrink-0 text-[var(--foreground)]/40" />
-              <select className="w-full bg-transparent text-sm text-[var(--foreground)] outline-none">
-                <option>{t("hero.cityMarina")}</option>
-                <option>{t("hero.cityDowntown")}</option>
-                <option>{t("hero.cityAirport")}</option>
-                <option>{t("hero.cityBusinessBay")}</option>
+              <select value={city} onChange={(e) => setCity(e.target.value)} className="w-full bg-transparent text-sm text-[var(--foreground)] outline-none">
+                <option value={CITY_VALUES[0]}>{t("hero.cityMarina")}</option>
+                <option value={CITY_VALUES[1]}>{t("hero.cityDowntown")}</option>
+                <option value={CITY_VALUES[2]}>{t("hero.cityAirport")}</option>
+                <option value={CITY_VALUES[3]}>{t("hero.cityBusinessBay")}</option>
               </select>
             </span>
           </label>
@@ -74,11 +94,11 @@ export default function Hero() {
               {t("hero.rentalLength")}
             </span>
             <span className="flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2.5">
-              <select className="w-full bg-transparent text-sm text-[var(--foreground)] outline-none">
-                <option>{t("hero.month1")}</option>
-                <option>{t("hero.month3")}</option>
-                <option>{t("hero.month6")}</option>
-                <option>{t("hero.month12")}</option>
+              <select value={months} onChange={(e) => setMonths(e.target.value)} className="w-full bg-transparent text-sm text-[var(--foreground)] outline-none">
+                <option value="1">{t("hero.month1")}</option>
+                <option value="3">{t("hero.month3")}</option>
+                <option value="6">{t("hero.month6")}</option>
+                <option value="12">{t("hero.month12")}</option>
               </select>
             </span>
           </label>
@@ -91,6 +111,9 @@ export default function Hero() {
               <CalendarDays className="h-4 w-4 shrink-0 text-[var(--foreground)]/40" />
               <input
                 type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                min={new Date().toISOString().slice(0, 10)}
                 className="w-full bg-transparent text-sm text-[var(--foreground)] outline-none [color-scheme:dark]"
               />
             </span>

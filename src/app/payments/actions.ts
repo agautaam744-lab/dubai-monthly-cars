@@ -19,7 +19,7 @@ export async function completeMockPayment(bookingId: string): Promise<Result> {
   const { data: booking, error: bookingError } = await supabase
     .from('bookings')
     .select(
-      'id, status, customer_id, monthly_price_aed, deposit_aed, total_add_ons_aed'
+      'id, status, customer_id, monthly_price_aed, deposit_aed, total_add_ons_aed, duration_months, start_date'
     )
     .eq('id', bookingId)
     .eq('customer_id', user.id)
@@ -72,7 +72,7 @@ export async function completeMockPayment(bookingId: string): Promise<Result> {
       booking_id: booking.id,
       customer_id: user.id,
       amount_aed: rentAmount,
-      type: 'monthly_rent',
+      type: 'monthly_rental',
       status: 'succeeded',
       provider: 'mock',
       provider_payment_id: `mock_rent_${Date.now()}`,
@@ -88,6 +88,23 @@ export async function completeMockPayment(bookingId: string): Promise<Result> {
     if (paymentError) {
       return { ok: false, error: paymentError.message }
     }
+  }
+
+  // Schedule next month as pending so recurring cron picks it up (multi-month only).
+  const durationMonths = Number((booking as { duration_months?: number }).duration_months ?? 1)
+  if (durationMonths > 1) {
+    const nextDue = new Date()
+    nextDue.setMonth(nextDue.getMonth() + 1)
+    await supabase.from('payments').insert({
+      booking_id: booking.id,
+      customer_id: user.id,
+      amount_aed: Number(booking.monthly_price_aed || 0),
+      type: 'monthly_rental',
+      status: 'pending',
+      provider: 'mock',
+      provider_payment_id: `mock_sched_${Date.now()}`,
+      due_date: nextDue.toISOString().slice(0, 10),
+    })
   }
 
   const { error: updateError } = await supabase

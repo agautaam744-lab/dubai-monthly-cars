@@ -19,14 +19,14 @@ import {
 import { cn } from '@/lib/utils/cn'
 import { useLanguage } from '@/contexts/LanguageContext'
 import NotificationBell from './NotificationBell'
+import { createClient } from '@/lib/supabase/client'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [languageOpen, setLanguageOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
 
-  // Testing ke liye true, baad mein auth se connect karein
-  const [isLoggedIn, setIsLoggedIn] = useState(true)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   const { lang, setLang, t } = useLanguage()
 
@@ -36,6 +36,16 @@ export default function Navbar() {
 
   useEffect(() => {
     setMounted(true)
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data }) => {
+      setIsLoggedIn(!!data.user)
+    })
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsLoggedIn(!!session?.user)
+    })
+    return () => {
+      listener.subscription.unsubscribe()
+    }
   }, [])
 
   useEffect(() => {

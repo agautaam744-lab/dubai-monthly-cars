@@ -68,14 +68,21 @@ export default function AgreementClient({
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const rect = canvas.getBoundingClientRect()
-    canvas.width = rect.width
-    canvas.height = rect.height
+    const setup = () => {
+      const rect = canvas.getBoundingClientRect()
+      const dpr = window.devicePixelRatio || 1
+      canvas.width = Math.round(rect.width * dpr)
+      canvas.height = Math.round(rect.height * dpr)
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      ctx.strokeStyle = '#0f172a'
+      ctx.lineWidth = 2.5
+      ctx.lineCap = 'round'
+      ctx.lineJoin = 'round'
+    }
 
-    ctx.strokeStyle = '#0f172a'
-    ctx.lineWidth = 2.5
-    ctx.lineCap = 'round'
-    ctx.lineJoin = 'round'
+    setup()
+    window.addEventListener('resize', setup)
+    return () => window.removeEventListener('resize', setup)
   }, [])
 
   const getCoordinates = (e: any) => {
@@ -127,7 +134,8 @@ export default function AgreementClient({
     const ctx = canvas?.getContext('2d')
     if (!ctx || !canvas) return
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    const rect = canvas.getBoundingClientRect()
+    ctx.clearRect(0, 0, rect.width, rect.height)
     setHasSignature(false)
   }
 

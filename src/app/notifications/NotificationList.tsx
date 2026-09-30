@@ -10,7 +10,11 @@ import {
   Car,
   AlertCircle,
   Loader2,
+  Gauge,
+  CalendarClock,
+  Wallet,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { markAsRead, markAllAsRead } from './actions'
 
 type Notification = {
@@ -23,10 +27,14 @@ type Notification = {
   created_at: string
 }
 
-const typeIcons: Record<string, any> = {
+const typeIcons: Record<string, LucideIcon> = {
   booking: Car,
   payment: CreditCard,
+  payment_due: Wallet,
   kyc: FileText,
+  document: FileText,
+  renewal: CalendarClock,
+  mileage: Gauge,
   reminder: AlertCircle,
   default: Bell,
 }
@@ -113,7 +121,7 @@ export default function NotificationList({
             <Bell className="mx-auto h-12 w-12 text-[var(--muted-foreground)]" />
             <p className="mt-4 font-semibold">No notifications yet</p>
             <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-              You'll see booking updates, payment reminders and alerts here.
+              You&apos;ll see booking updates, payment reminders and alerts here.
             </p>
           </div>
         ) : (

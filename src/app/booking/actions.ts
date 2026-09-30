@@ -15,6 +15,13 @@ const TERMINAL_BOOKING_STATUSES = new Set([
   'terminated',
 ])
 
+const DURATION_DISCOUNTS: Record<number, number> = {
+  1: 0,
+  3: 0.05,
+  6: 0.1,
+  12: 0.15,
+}
+
 export async function checkCustomerKyc() {
   const supabase = await createClient()
 
@@ -320,19 +327,33 @@ export async function createBookingFromSelection(
       .maybeSingle()
 
     if (deliveryAddOn) {
+      const fee = Number(deliveryAddOn.price_aed)
+      const feeType = deliveryAddOn.price_type as 'one_time' | 'monthly'
       selectedAddOns.push({
         id: deliveryAddOn.id,
         name: deliveryAddOn.name,
-        price_aed: Number(deliveryAddOn.price_aed),
-        price_type: deliveryAddOn.price_type as 'one_time' | 'monthly',
+        price_aed: fee,
+        price_type: feeType,
       })
 
-      oneTimeAddOnTotal += Number(deliveryAddOn.price_aed)
+      if (feeType === 'monthly') {
+        // monthly fee also gets the duration discount below
+      } else {
+        oneTimeAddOnTotal += fee
+      }
     }
   }
 
+  const discountRate = DURATION_DISCOUNTS[durationMonths] ?? 0
+  const discountedMonthlyPrice = Math.round(Number(pricing.monthly_price_aed) * (1 - discountRate))
+  // Recompute monthly add-on total with discount if a monthly delivery fee was auto-added
+  const autoMonthlyDelivery = selectedAddOns
+    .filter((item) => item.price_type === 'monthly')
+    .reduce((sum, item) => sum + item.price_aed, 0)
+  const finalMonthlyAddOnTotal = Math.round(autoMonthlyDelivery * (1 - discountRate))
+
   const totalAddOns =
-    monthlyAddOnTotal + oneTimeAddOnTotal
+    finalMonthlyAddOnTotal + oneTimeAddOnTotal
 
   const { data: booking, error: bookingError } =
     await supabase
@@ -344,7 +365,7 @@ export async function createBookingFromSelection(
         start_date: input.startDate,
         end_date: endDate,
         duration_months: durationMonths,
-        monthly_price_aed: Number(pricing.monthly_price_aed),
+        monthly_price_aed: discountedMonthlyPrice,
         deposit_aed: Number(pricing.security_deposit_aed),
         total_add_ons_aed: totalAddOns,
         delivery_type: input.deliveryType,

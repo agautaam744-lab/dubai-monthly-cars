@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
-import { ChevronLeft, Car, Calendar, User, CreditCard, FileText } from 'lucide-react'
-import { requireAdmin } from '@/lib/admin'
+import { notFound, redirect } from 'next/navigation'
+import { ChevronLeft, Car, Calendar, CreditCard, FileText } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -17,7 +17,9 @@ function formatAED(value: number) {
 
 export default async function BookingDetailPage({ params }: Props) {
   const { id } = await params
-  const { supabase } = await requireAdmin()
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect(`/login?next=/bookings/${id}`)
 
   const { data: booking } = await supabase
     .from('bookings')
@@ -25,6 +27,7 @@ export default async function BookingDetailPage({ params }: Props) {
       id,
       status,
       start_date,
+      end_date,
       duration_months,
       monthly_price_aed,
       deposit_aed,
@@ -32,17 +35,16 @@ export default async function BookingDetailPage({ params }: Props) {
       agreement_signed_at,
       created_at,
       vehicles ( make, model, year, plate_number ),
-      pricing_tiers ( name, mileage_limit_km ),
-      profiles:customer_id ( full_name, email, phone )
+      pricing_tiers ( name, mileage_limit_km )
     `)
     .eq('id', id)
+    .eq('customer_id', user.id)
     .single()
 
   if (!booking) notFound()
 
   const vehicle = Array.isArray(booking.vehicles) ? booking.vehicles[0] : booking.vehicles
   const tier = Array.isArray(booking.pricing_tiers) ? booking.pricing_tiers[0] : booking.pricing_tiers
-  const customer = Array.isArray(booking.profiles) ? booking.profiles[0] : booking.profiles
 
   const total =
     Number(booking.monthly_price_aed || 0) +
@@ -50,13 +52,13 @@ export default async function BookingDetailPage({ params }: Props) {
     Number(booking.total_add_ons_aed || 0)
 
   return (
-    <div className="p-6 sm:p-8">
+    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 min-h-screen bg-[var(--background)]">
       <Link
-        href="/admin/bookings"
+        href="/bookings"
         className="inline-flex items-center gap-1 text-sm text-[var(--muted-foreground)] transition hover:text-[var(--foreground)]"
       >
         <ChevronLeft className="h-4 w-4" />
-        Back to Bookings
+        Back to My Bookings
       </Link>
 
       <div className="mt-6 mb-8">
@@ -72,18 +74,6 @@ export default async function BookingDetailPage({ params }: Props) {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
-          <div className="mb-4 flex items-center gap-2">
-            <User className="h-5 w-5 text-[var(--accent)]" />
-            <h2 className="font-semibold">Customer</h2>
-          </div>
-          <div className="space-y-2 text-sm">
-            <p><span className="text-[var(--muted-foreground)]">Name:</span> {customer?.full_name ?? '—'}</p>
-            <p><span className="text-[var(--muted-foreground)]">Email:</span> {customer?.email ?? '—'}</p>
-            <p><span className="text-[var(--muted-foreground)]">Phone:</span> {customer?.phone ?? '—'}</p>
-          </div>
-        </div>
-
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
           <div className="mb-4 flex items-center gap-2">
             <Car className="h-5 w-5 text-[var(--accent)]" />

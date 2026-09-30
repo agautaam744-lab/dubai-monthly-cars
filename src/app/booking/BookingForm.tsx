@@ -59,6 +59,17 @@ type Props = {
 
 const durations = [1, 3, 6, 12]
 
+export const DURATION_DISCOUNTS: Record<number, number> = {
+  1: 0,
+  3: 0.05,
+  6: 0.1,
+  12: 0.15,
+}
+
+export function getDiscountRate(months: number) {
+  return DURATION_DISCOUNTS[months] ?? 0
+}
+
 function formatAED(value: number) {
   return new Intl.NumberFormat('en-AE', {
     style: 'currency',
@@ -162,8 +173,12 @@ export function BookingForm({
   const effectiveOneTimeAddOnTotal =
     oneTimeAddOnTotal + homeDeliveryFee
 
+  const discountRate = DURATION_DISCOUNTS[duration] ?? 0
+  const discountedMonthlyPrice = Math.round(monthlyPrice * (1 - discountRate))
+  const discountedMonthlyAddOnTotal = Math.round(monthlyAddOnTotal * (1 - discountRate))
+
   const monthlyRentalTotal =
-    monthlyPrice + monthlyAddOnTotal
+    discountedMonthlyPrice + discountedMonthlyAddOnTotal
 
   const estimatedFirstPayment =
     monthlyRentalTotal +
@@ -183,17 +198,17 @@ export function BookingForm({
   const saveBookingSelection = async () => {
     setKycMessage('')
 
-    // 🔥 NAYA FIX: Date check yahan add kiya hai
-    const today = new Date();
-    const localToday = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-    
-    if (startDate < localToday) {
-      setKycMessage('Start date cannot be in the past. Please select a valid future date.');
-      return;
-    }
+    // Past-date guard uses UTC date string to match server validation.
+    const todayUtc = new Date().toISOString().slice(0, 10)
 
     if (!startDate) {
       setSaved(false)
+      setKycMessage('Please select a start date before continuing.')
+      return
+    }
+
+    if (startDate < todayUtc) {
+      setKycMessage('Start date cannot be in the past. Please select a valid future date.')
       return
     }
 
@@ -459,8 +474,9 @@ export function BookingForm({
           </div>
 
           <p className="mt-3 rounded-xl bg-[var(--muted)] p-3 text-xs leading-5 text-[var(--muted-foreground)]">
-            Duration-based discounts will be applied here
-            once your final pricing rules are configured.
+            {discountRate > 0
+              ? `${Math.round(discountRate * 100)}% multi-month discount applied to monthly rent and monthly add-ons.`
+              : 'Choose 3, 6 or 12 months to unlock 5%, 10% or 15% off monthly rent.'}
           </p>
         </section>
 
@@ -492,7 +508,7 @@ export function BookingForm({
                   setStartDate(event.target.value)
                   setSaved(false)
                 }}
-                min={new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0]}
+                min={new Date().toISOString().slice(0, 10)}
                 className="w-full bg-transparent text-sm outline-none [&::-webkit-calendar-picker-indicator]:opacity-0"
                 required
               />
@@ -684,7 +700,7 @@ export function BookingForm({
 
          {kycMessage && (
   <div className="mb-4 rounded-xl border border-[var(--warning)]/30 bg-[var(--warning)]/10 p-4 text-sm text-[var(--warning)]">
-    <p className="font-semibold">Vehicle Unavailable</p>
+    <p className="font-semibold">Action required</p>
     <p className="mt-1 leading-5">{kycMessage}</p>
     <p className="mt-2 text-xs font-medium">
       Please try selecting a different start date, or go back and choose another vehicle.

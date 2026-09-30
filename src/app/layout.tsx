@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/shared/ThemeProvider'
 import { LanguageProvider } from '@/contexts/LanguageContext'
+import ServiceWorkerRegister from '@/components/shared/ServiceWorkerRegister'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -30,6 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
+        <ServiceWorkerRegister />
         <LanguageProvider>
           <ThemeProvider
             attribute="class"
