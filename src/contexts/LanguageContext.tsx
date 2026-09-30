@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { Language, translations } from '@/lib/translations'
@@ -12,22 +12,30 @@ type LanguageContextType = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Language>('en')
+  const [lang, setLangState] = useState<Language>('en')
 
-  // Load saved language on mount
+  // Load saved language on mount (prefer cookie, fall back to localStorage)
   useEffect(() => {
-    const savedLang = localStorage.getItem('preferred_language') as Language
+    const cookieMatch = document.cookie.match(/preferred_language=(en|ar)/)
+    const savedLang = (cookieMatch?.[1] ||
+      localStorage.getItem('preferred_language')) as Language | null
+
     if (savedLang === 'en' || savedLang === 'ar') {
-      setLang(savedLang)
+      setLangState(savedLang)
     }
   }, [])
 
-  // Update HTML dir and lang attributes when language changes
+  // Update HTML dir/lang attributes, localStorage, and cookie when language changes
   useEffect(() => {
     document.documentElement.lang = lang
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'
     localStorage.setItem('preferred_language', lang)
+    document.cookie = `preferred_language=${lang}; path=/; max-age=31536000`
   }, [lang])
+
+  const setLang = (nextLang: Language) => {
+    setLangState(nextLang)
+  }
 
   // t function — always callable, returns key if not found
   const t = (key: string): string => {
