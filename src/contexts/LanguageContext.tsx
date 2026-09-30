@@ -1,12 +1,12 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { Language } from '@/lib/translations'
+import { Language, translations } from '@/lib/translations'
 
 type LanguageContextType = {
   lang: Language
   setLang: (lang: Language) => void
-  t: any // Translation object
+  t: (key: string) => string
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
@@ -29,13 +29,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('preferred_language', lang)
   }, [lang])
 
-  // Import translations dynamically based on lang
-  const [t, setT] = useState<any>({})
-  useEffect(() => {
-    import('@/lib/translations').then((mod) => {
-      setT(mod.translations[lang])
-    })
-  }, [lang])
+  // t function — always callable, returns key if not found
+  const t = (key: string): string => {
+    return translations[lang][key] ?? translations.en[key] ?? key
+  }
 
   return (
     <LanguageContext.Provider value={{ lang, setLang, t }}>
