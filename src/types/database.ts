@@ -116,3 +116,335 @@ export interface NotificationRow {
   is_read?: boolean | null
   created_at?: string
 }
+
+export interface Database {
+  public: {
+    Tables: {
+      profiles: {
+        Row: {
+          id: string
+          full_name: string | null
+          phone: string | null
+          email: string | null
+          preferred_language: 'en' | 'ar'
+          preferred_theme: 'light' | 'dark' | 'system'
+          role: 'customer' | 'admin' | 'fleet_manager' | 'finance' | 'support' | 'delivery'
+          is_blacklisted: boolean
+          corporate_account_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['profiles']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Database['public']['Tables']['profiles']['Row']>
+      }
+      vehicles: {
+        Row: {
+          id: string
+          make: string
+          model: string
+          year: number | null
+          category: string | null
+          transmission: string | null
+          fuel_type: string | null
+          seats: number | null
+          color: string | null
+          plate_number: string
+          current_mileage: number | null
+          status: 'available' | 'rented' | 'maintenance' | 'out_of_service'
+          location: string | null
+          description: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['vehicles']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Database['public']['Tables']['vehicles']['Row']>
+      }
+      bookings: {
+        Row: {
+          id: string
+          customer_id: string
+          vehicle_id: string
+          tier_id: string
+          start_date: string
+          end_date: string | null
+          duration_months: number
+          monthly_price_aed: number | string
+          deposit_aed: number | string
+          total_add_ons_aed: number | string
+          delivery_type: 'pickup' | 'home_delivery'
+          delivery_address: string | null
+          status: 'pending_kyc' | 'pending_payment' | 'active' | 'completed' | 'cancelled' | 'terminated'
+          agreement_signed_at: string | null
+          agreement_pdf_path: string | null
+          created_at: string
+          updated_at: string
+          auto_renew: boolean
+        }
+        Insert: Omit<Database['public']['Tables']['bookings']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Database['public']['Tables']['bookings']['Row']>
+      }
+      pricing_tiers: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          mileage_limit_km: number
+          insurance_level: string | null
+          includes_delivery: boolean | null
+          sort_order: number | null
+        }
+        Insert: Omit<Database['public']['Tables']['pricing_tiers']['Row'], 'id'>
+        Update: Partial<Database['public']['Tables']['pricing_tiers']['Row']>
+      }
+      vehicle_pricing: {
+        Row: {
+          id: string
+          vehicle_id: string
+          tier_id: string
+          monthly_price_aed: number | string
+          security_deposit_aed: number | string
+        }
+        Insert: Omit<Database['public']['Tables']['vehicle_pricing']['Row'], 'id'>
+        Update: Partial<Database['public']['Tables']['vehicle_pricing']['Row']>
+      }
+      vehicle_images: {
+        Row: {
+          id: string
+          vehicle_id: string
+          storage_path: string
+          is_primary: boolean | null
+          sort_order: number | null
+        }
+        Insert: Omit<Database['public']['Tables']['vehicle_images']['Row'], 'id'>
+        Update: Partial<Database['public']['Tables']['vehicle_images']['Row']>
+      }
+      add_ons: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          price_aed: number | string
+          price_type: 'one_time' | 'monthly'
+          is_active: boolean
+        }
+        Insert: Omit<Database['public']['Tables']['add_ons']['Row'], 'id'>
+        Update: Partial<Database['public']['Tables']['add_ons']['Row']>
+      }
+      booking_add_ons: {
+        Row: {
+          id: string
+          booking_id: string
+          add_on_id: string
+          quantity: number
+          price_aed: number | string
+        }
+        Insert: Omit<Database['public']['Tables']['booking_add_ons']['Row'], 'id'>
+        Update: Partial<Database['public']['Tables']['booking_add_ons']['Row']>
+      }
+      documents: {
+        Row: {
+          id: string
+          user_id: string
+          type: 'emirates_id' | 'driving_license' | 'passport'
+          storage_path: string
+          status: 'pending' | 'approved' | 'rejected'
+          rejection_reason: string | null
+          expires_at: string | null
+          reviewed_by: string | null
+          reviewed_at: string | null
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['documents']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['documents']['Row']>
+      }
+      payments: {
+        Row: {
+          id: string
+          booking_id: string
+          customer_id: string
+          amount_aed: number | string
+          type: string
+          status: 'pending' | 'succeeded' | 'failed' | 'refunded'
+          provider: string | null
+          provider_payment_id: string | null
+          due_date: string | null
+          paid_at: string | null
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['payments']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['payments']['Row']>
+      }
+      condition_reports: {
+        Row: {
+          id: string
+          booking_id: string
+          type: 'pickup' | 'return'
+          mileage: number
+          fuel_level: string
+          notes: string | null
+          reported_by: string
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['condition_reports']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['condition_reports']['Row']>
+      }
+      condition_report_photos: {
+        Row: {
+          id: string
+          report_id: string
+          storage_path: string
+        }
+        Insert: Omit<Database['public']['Tables']['condition_report_photos']['Row'], 'id'>
+        Update: Partial<Database['public']['Tables']['condition_report_photos']['Row']>
+      }
+      damage_reports: {
+        Row: {
+          id: string
+          booking_id: string
+          description: string
+          estimated_cost_aed: number | null
+          charged_against_deposit: boolean
+          status: 'reported' | 'under_review' | 'charged' | 'resolved'
+          created_by: string
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['damage_reports']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['damage_reports']['Row']>
+      }
+      damage_report_photos: {
+        Row: {
+          id: string
+          report_id: string
+          storage_path: string
+        }
+        Insert: Omit<Database['public']['Tables']['damage_report_photos']['Row'], 'id'>
+        Update: Partial<Database['public']['Tables']['damage_report_photos']['Row']>
+      }
+      maintenance_records: {
+        Row: {
+          id: string
+          vehicle_id: string
+          type: 'service' | 'repair' | 'inspection'
+          description: string
+          scheduled_date: string
+          completed_date: string | null
+          mileage_at_service: number | null
+          cost_aed: number | null
+          status: 'scheduled' | 'completed' | 'overdue'
+          created_by: string | null
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['maintenance_records']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['maintenance_records']['Row']>
+      }
+      corporate_accounts: {
+        Row: {
+          id: string
+          company_name: string
+          trade_license: string | null
+          contact_person: string | null
+          contact_phone: string | null
+          email: string | null
+          retainer_amount: number | null
+          guaranteed_vehicles: number | null
+          status: 'active' | 'suspended'
+          created_at: string
+          updated_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['corporate_accounts']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Database['public']['Tables']['corporate_accounts']['Row']>
+      }
+      notifications: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          body: string | null
+          type: string | null
+          is_read: boolean
+          link: string | null
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['notifications']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['notifications']['Row']>
+      }
+      activity_logs: {
+        Row: {
+          id: string
+          actor_id: string
+          action: string
+          entity_type: string
+          entity_id: string
+          metadata: Record<string, unknown> | null
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['activity_logs']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['activity_logs']['Row']>
+      }
+      reviews: {
+        Row: {
+          id: string
+          booking_id: string
+          customer_id: string
+          vehicle_id: string
+          rating: number
+          comment: string | null
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['reviews']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['reviews']['Row']>
+      }
+      referrals: {
+        Row: {
+          id: string
+          referrer_id: string
+          referred_id: string | null
+          status: 'pending' | 'completed' | 'rewarded'
+          reward_aed: number | null
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['referrals']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['referrals']['Row']>
+      }
+      watchlist: {
+        Row: {
+          id: string
+          user_id: string
+          vehicle_id: string
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['watchlist']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['watchlist']['Row']>
+      }
+      promo_codes: {
+        Row: {
+          id: string
+          code: string
+          discount_percent: number
+          max_uses: number | null
+          used_count: number
+          expires_at: string | null
+          is_active: boolean
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['promo_codes']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['promo_codes']['Row']>
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      vehicle_status: 'available' | 'rented' | 'maintenance' | 'out_of_service'
+      booking_status: 'pending_kyc' | 'pending_payment' | 'active' | 'completed' | 'cancelled' | 'terminated'
+      document_status: 'pending' | 'approved' | 'rejected'
+      payment_status: 'pending' | 'succeeded' | 'failed' | 'refunded'
+      document_type: 'emirates_id' | 'driving_license' | 'passport'
+      payment_type: 'deposit' | 'monthly_rental' | 'add_on' | 'refund' | 'damage_charge'
+      promo_code_type: 'percentage' | 'fixed'
+    }
+  }
+}

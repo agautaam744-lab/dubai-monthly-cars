@@ -169,8 +169,8 @@ export default function PaymentForm({ booking, addOns }: Props) {
               </p>
               <p className="text-xs text-[var(--muted-foreground)]">
                 {vehicle.year ?? ''}
-                {vehicle.category ? ` · ${vehicle.category}` : ''}
-                {vehicle.location ? ` · ${vehicle.location}` : ''}
+                {vehicle.category ? ` � ${vehicle.category}` : ''}
+                {vehicle.location ? ` � ${vehicle.location}` : ''}
               </p>
             </div>
           </div>
@@ -302,7 +302,7 @@ export default function PaymentForm({ booking, addOns }: Props) {
                     <div key={a.id} className="flex justify-between text-xs text-[var(--muted-foreground)]">
                       <span>
                         {info.name}
-                        {a.quantity > 1 ? ` × ${a.quantity}` : ''}
+                        {a.quantity > 1 ? ` � ${a.quantity}` : ''}
                         {info.price_type === 'monthly' ? ' /mo' : ''}
                       </span>
                       <span>{formatAED(Number(a.price_aed))}</span>
