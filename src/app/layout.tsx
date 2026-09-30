@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/shared/ThemeProvider'
+import { LanguageProvider } from '@/contexts/LanguageContext'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -10,7 +11,8 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: 'Dubai Monthly Cars | Premium Monthly Car Rental',
-  description: 'Flexible monthly car rental in Dubai. Choose from Basic, Plus or Premium plans with home delivery.',
+  description:
+    'Flexible monthly car rental in Dubai. Choose from Basic, Plus or Premium plans with home delivery.',
   manifest: '/manifest.json',
   themeColor: '#D4AF37',
   appleWebApp: {
@@ -28,14 +30,16 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+        <LanguageProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+          </ThemeProvider>
+        </LanguageProvider>
       </body>
     </html>
   )
