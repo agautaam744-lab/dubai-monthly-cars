@@ -1,6 +1,28 @@
-// DMC service worker: app-shell offline cache
-const CACHE = 'dmc-v1'
-const CORE = ['/', '/cars', '/manifest.json', '/favicon.ico']
+// DMC service worker: app-shell offline cache.
+//
+// Privacy rule: only PUBLIC pages and static assets are cached. Authenticated
+// pages (/dashboard, /bookings, /payments, /admin, ...) are always served from
+// the network so account data is never written to the shared cache.
+const CACHE = 'dmc-v2'
+const CORE = ['/', '/cars', '/how-it-works', '/manifest.json', '/favicon.ico']
+const PUBLIC_PATHS = new Set(['/', '/cars', '/how-it-works', '/login'])
+
+function isCacheable(request) {
+  const url = new URL(request.url)
+  if (url.origin !== self.location.origin) return false
+  if (url.pathname.startsWith('/api/')) return false
+  if (url.href.includes('supabase')) return false
+  if (request.mode === 'navigate') {
+    return PUBLIC_PATHS.has(url.pathname)
+  }
+  // Static assets (JS/CSS/images/fonts) are safe to cache.
+  return (
+    request.destination === 'script' ||
+    request.destination === 'style' ||
+    request.destination === 'image' ||
+    request.destination === 'font'
+  )
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -16,12 +38,7 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const { request } = event
-  if (request.method !== 'GET') return
-  const url = new URL(request.url)
-  if (url.origin !== self.location.origin) return
-  if (request.url.includes('/api/') || request.url.includes('supabase')) {
-    return
-  }
+  if (request.method !== 'GET' || !isCacheable(request)) return
   event.respondWith(
     caches.match(request).then((cached) => {
       const network = fetch(request)

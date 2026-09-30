@@ -48,6 +48,12 @@ export async function createNotification({
   link?: string
 }) {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ok: false }
+
+  // Constrain to self: this helper must never be usable to notify other users.
+  if (userId !== user.id) return { ok: false }
+
   await supabase.from('notifications').insert({
     user_id: userId,
     title,
@@ -55,4 +61,5 @@ export async function createNotification({
     type,
     link,
   })
+  return { ok: true }
 }

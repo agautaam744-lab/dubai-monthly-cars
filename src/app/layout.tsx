@@ -4,6 +4,7 @@ import './globals.css'
 import { ThemeProvider } from '@/components/shared/ThemeProvider'
 import { LanguageProvider } from '@/contexts/LanguageContext'
 import ServiceWorkerRegister from '@/components/shared/ServiceWorkerRegister'
+import Footer from '@/components/layout/Footer'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -40,6 +41,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
+            <Footer />
           </ThemeProvider>
         </LanguageProvider>
       </body>

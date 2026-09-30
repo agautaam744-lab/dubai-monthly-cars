@@ -206,6 +206,7 @@ export default async function AdminKycPage() {
                     <Link
                       href={document.signedUrl}
                       target="_blank"
+                      rel="noopener noreferrer"
                       className="rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold hover:border-[var(--accent)]"
                     >
                       View document

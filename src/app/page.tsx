@@ -66,11 +66,6 @@ export default function HomePage() {
           </Link>
         </section>
       </main>
-
-      {/* Footer */}
-      <footer className="border-t border-[var(--border)] py-8 text-center text-sm text-[var(--foreground)]/60">
-        <p>© {new Date().getFullYear()} Dubai Monthly Cars. All rights reserved.</p>
-      </footer>
     </div>
   )
 }

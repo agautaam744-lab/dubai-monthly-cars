@@ -339,10 +339,6 @@ export default function HowItWorksPage() {
           </Link>
         </section>
       </main>
-
-      <footer className="border-t border-[var(--border)] py-8 text-center text-sm text-[var(--muted-foreground)]">
-        <p>© {new Date().getFullYear()} Dubai Monthly Cars. All rights reserved.</p>
-      </footer>
     </div>
   )
 }

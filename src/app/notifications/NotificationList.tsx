@@ -62,7 +62,11 @@ export default function NotificationList({
       })
     }
     if (n.link) {
-      router.push(n.link)
+      // Same-origin guard: notification links are created server-side, but
+      // never navigate to an external URL from a stored link value.
+      if (n.link === '/' || /^\/[^/\\]/.test(n.link)) {
+        router.push(n.link)
+      }
     }
   }
 
