@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
@@ -17,54 +17,8 @@ import {
   User,
 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
+import { useLanguage } from '@/contexts/LanguageContext'
 import NotificationBell from './NotificationBell'
-
-type Language = 'en' | 'ar'
-
-const translations = {
-  en: {
-    browseCars: 'Browse Cars',
-    howItWorks: 'How It Works',
-    support: 'Support',
-    myBookings: 'My Bookings',
-    watchlist: 'Watchlist',
-    conditionReport: 'Condition',
-    damageReport: 'Damage',
-    notifications: 'Notifications',
-    profile: 'My Profile',
-    login: 'Login',
-    dashboard: 'Dashboard',
-    language: 'Language',
-    english: 'English',
-    arabic: 'العربية',
-    toggleTheme: 'Toggle theme',
-    openMenu: 'Open menu',
-    closeMenu: 'Close menu',
-    lightMode: 'Light Mode',
-    darkMode: 'Dark Mode',
-  },
-  ar: {
-    browseCars: 'تصفح السيارات',
-    howItWorks: 'كيف يعمل',
-    support: 'الدعم',
-    myBookings: 'حجوزاتي',
-    watchlist: 'المفضلة',
-    conditionReport: 'الحالة',
-    damageReport: 'الأضرار',
-    notifications: 'الإشعارات',
-    profile: 'ملفي',
-    login: 'تسجيل الدخول',
-    dashboard: 'لوحة القيادة',
-    language: 'اللغة',
-    english: 'English',
-    arabic: 'العربية',
-    toggleTheme: 'تغيير المظهر',
-    openMenu: 'فتح القائمة',
-    closeMenu: 'إغلاق القائمة',
-    lightMode: 'الوضع المضيء',
-    darkMode: 'الوضع المظلم',
-  },
-}
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -74,19 +28,7 @@ export default function Navbar() {
   // Testing ke liye true, baad mein auth se connect karein
   const [isLoggedIn, setIsLoggedIn] = useState(true)
 
-  const [language, setLanguage] = useState<Language>(() => {
-    if (typeof window === 'undefined') {
-      return 'en'
-    }
-
-    const savedLanguage = localStorage.getItem(
-      'dubai-monthly-cars-language'
-    ) as Language | null
-
-    return savedLanguage === 'en' || savedLanguage === 'ar'
-      ? savedLanguage
-      : 'en'
-  })
+  const { lang, setLang, t } = useLanguage()
 
   const languageRef = useRef<HTMLDivElement>(null)
 
@@ -95,15 +37,6 @@ export default function Navbar() {
   useEffect(() => {
     setMounted(true)
   }, [])
-
-  useEffect(() => {
-    const isArabic = language === 'ar'
-
-    document.documentElement.lang = language
-    document.documentElement.dir = isArabic ? 'rtl' : 'ltr'
-
-    localStorage.setItem('dubai-monthly-cars-language', language)
-  }, [language])
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -122,8 +55,8 @@ export default function Navbar() {
     }
   }, [])
 
-  const changeLanguage = (nextLanguage: Language) => {
-    setLanguage(nextLanguage)
+  const changeLanguage = (nextLanguage: 'en' | 'ar') => {
+    setLang(nextLanguage)
     setLanguageOpen(false)
     setIsOpen(false)
   }
@@ -132,16 +65,14 @@ export default function Navbar() {
     setTheme(theme === 'dark' ? 'light' : 'dark')
   }
 
-  const t = translations[language]
-
   const navLinks = [
-    { href: '/cars', label: t.browseCars },
-    { href: '/how-it-works', label: t.howItWorks },
-    { href: '/bookings', label: t.myBookings },
-    { href: '/condition-report', label: t.conditionReport },
-    { href: '/damage-report', label: t.damageReport },
-    { href: '/watchlist', label: t.watchlist },
-    { href: '/support', label: t.support },
+    { href: '/cars', label: t('navbar.browseCars') },
+    { href: '/how-it-works', label: t('navbar.howItWorks') },
+    { href: '/bookings', label: t('navbar.myBookings') },
+    { href: '/condition-report', label: t('navbar.conditionReport') },
+    { href: '/damage-report', label: t('navbar.damageReport') },
+    { href: '/watchlist', label: t('navbar.watchlist') },
+    { href: '/support', label: t('navbar.support') },
   ]
 
   return (
@@ -214,7 +145,7 @@ export default function Navbar() {
             >
               <Globe2 className="h-4 w-4" aria-hidden="true" />
               <span className="whitespace-nowrap">
-                {language === 'en' ? 'EN' : 'AR'}
+                {lang === 'en' ? 'EN' : 'AR'}
               </span>
               <ChevronDown
                 className={cn(
@@ -247,7 +178,7 @@ export default function Navbar() {
                       'text-sm',
                       'transition-colors',
                       'hover:bg-[var(--muted)]',
-                      language === 'en' && 'bg-[var(--muted)]'
+                      lang === 'en' && 'bg-[var(--muted)]'
                     )}
                     role="menuitem"
                   >
@@ -255,7 +186,7 @@ export default function Navbar() {
                       <span className="text-base">🇬🇧</span>
                       English
                     </span>
-                    {language === 'en' && (
+                    {lang === 'en' && (
                       <Check
                         className="h-4 w-4 text-[var(--accent)]"
                         aria-hidden="true"
@@ -273,7 +204,7 @@ export default function Navbar() {
                       'text-sm',
                       'transition-colors',
                       'hover:bg-[var(--muted)]',
-                      language === 'ar' && 'bg-[var(--muted)]'
+                      lang === 'ar' && 'bg-[var(--muted)]'
                     )}
                     role="menuitem"
                   >
@@ -281,7 +212,7 @@ export default function Navbar() {
                       <span className="text-base">🇦🇪</span>
                       العربية
                     </span>
-                    {language === 'ar' && (
+                    {lang === 'ar' && (
                       <Check
                         className="h-4 w-4 text-[var(--accent)]"
                         aria-hidden="true"
@@ -330,8 +261,8 @@ export default function Navbar() {
               'transition-colors',
               'hover:bg-[var(--muted)]'
             )}
-            aria-label={t.toggleTheme}
-            title={t.toggleTheme}
+            aria-label={t('navbar.toggleTheme')}
+            title={t('navbar.toggleTheme')}
           >
             {mounted ? (
               theme === 'dark' ? (
@@ -363,7 +294,7 @@ export default function Navbar() {
               )}
             >
               <LayoutDashboard className="h-4 w-4" />
-              <span className="hidden xl:inline">{t.dashboard}</span>
+              <span className="hidden xl:inline">{t('navbar.dashboard')}</span>
             </Link>
           ) : (
             <Link
@@ -382,7 +313,7 @@ export default function Navbar() {
                 'active:scale-[0.98]'
               )}
             >
-              {t.login}
+              {t('navbar.login')}
             </Link>
           )}
 
@@ -399,7 +330,7 @@ export default function Navbar() {
               'transition-colors',
               'hover:bg-[var(--muted)]'
             )}
-            aria-label={isOpen ? t.closeMenu : t.openMenu}
+            aria-label={isOpen ? t('navbar.closeMenu') : t('navbar.openMenu')}
             aria-expanded={isOpen}
           >
             {isOpen ? (
@@ -455,7 +386,7 @@ export default function Navbar() {
               )}
             >
               <Bell className="h-5 w-5" />
-              {t.notifications}
+              {t('navbar.notifications')}
             </Link>
           )}
 
@@ -474,7 +405,7 @@ export default function Navbar() {
               )}
             >
               <User className="h-5 w-5" />
-              {t.profile}
+              {t('navbar.profile')}
             </Link>
           )}
 
@@ -498,7 +429,7 @@ export default function Navbar() {
             >
               <span className="flex items-center gap-3">
                 <Globe2 className="h-5 w-5" />
-                {language === 'en' ? 'English' : 'العربية'}
+                {lang === 'en' ? 'English' : 'العربية'}
               </span>
               <ChevronDown
                 className={cn(
@@ -519,13 +450,13 @@ export default function Navbar() {
                     'rounded-lg px-3',
                     'text-sm',
                     'hover:bg-[var(--muted)]',
-                    language === 'en' && 'bg-[var(--muted)]'
+                    lang === 'en' && 'bg-[var(--muted)]'
                   )}
                 >
                   <span className="flex items-center gap-3">
                     <span>🇬🇧</span> English
                   </span>
-                  {language === 'en' && (
+                  {lang === 'en' && (
                     <Check className="h-4 w-4 text-[var(--accent)]" />
                   )}
                 </button>
@@ -539,13 +470,13 @@ export default function Navbar() {
                     'rounded-lg px-3',
                     'text-sm',
                     'hover:bg-[var(--muted)]',
-                    language === 'ar' && 'bg-[var(--muted)]'
+                    lang === 'ar' && 'bg-[var(--muted)]'
                   )}
                 >
                   <span className="flex items-center gap-3">
                     <span>🇦🇪</span> العربية
                   </span>
-                  {language === 'ar' && (
+                  {lang === 'ar' && (
                     <Check className="h-4 w-4 text-[var(--accent)]" />
                   )}
                 </button>
@@ -576,12 +507,12 @@ export default function Navbar() {
                     ) : (
                       <Moon className="h-5 w-5" />
                     )}
-                    {theme === 'dark' ? t.lightMode : t.darkMode}
+                    {theme === 'dark' ? t('navbar.lightMode') : t('navbar.darkMode')}
                   </>
                 ) : (
                   <>
                     <Moon className="h-5 w-5 opacity-0" />
-                    <span className="opacity-0">{t.darkMode}</span>
+                    <span className="opacity-0">{t('navbar.darkMode')}</span>
                   </>
                 )}
               </span>
@@ -606,7 +537,7 @@ export default function Navbar() {
               )}
             >
               <LayoutDashboard className="h-4 w-4" />
-              {t.dashboard}
+              {t('navbar.dashboard')}
             </Link>
           ) : (
             <Link
@@ -624,7 +555,7 @@ export default function Navbar() {
                 'hover:bg-[var(--accent-hover)]'
               )}
             >
-              {t.login}
+              {t('navbar.login')}
             </Link>
           )}
         </div>

@@ -1,4 +1,4 @@
-export type Language = 'en' | 'ar'
+﻿export type Language = 'en' | 'ar'
 
 export const translations: Record<Language, Record<string, string>> = {
   en: {
@@ -12,6 +12,27 @@ export const translations: Record<Language, Record<string, string>> = {
     'nav.login': 'Login',
     'nav.logout': 'Logout',
     'nav.admin': 'Admin',
+
+    // Navbar (top nav bar component)
+    'navbar.browseCars': 'Browse Cars',
+    'navbar.howItWorks': 'How It Works',
+    'navbar.support': 'Support',
+    'navbar.myBookings': 'My Bookings',
+    'navbar.watchlist': 'Watchlist',
+    'navbar.conditionReport': 'Condition',
+    'navbar.damageReport': 'Damage',
+    'navbar.notifications': 'Notifications',
+    'navbar.profile': 'My Profile',
+    'navbar.login': 'Login',
+    'navbar.dashboard': 'Dashboard',
+    'navbar.language': 'Language',
+    'navbar.english': 'English',
+    'navbar.arabic': 'العربية',
+    'navbar.toggleTheme': 'Toggle theme',
+    'navbar.openMenu': 'Open menu',
+    'navbar.closeMenu': 'Close menu',
+    'navbar.lightMode': 'Light Mode',
+    'navbar.darkMode': 'Dark Mode',
 
     // Hero
     'hero.title1': 'Your Car, Every Month',
@@ -85,6 +106,27 @@ export const translations: Record<Language, Record<string, string>> = {
     'nav.login': 'تسجيل الدخول',
     'nav.logout': 'تسجيل الخروج',
     'nav.admin': 'المشرف',
+
+    // Navbar (top nav bar component)
+    'navbar.browseCars': 'تصفح السيارات',
+    'navbar.howItWorks': 'كيف يعمل',
+    'navbar.support': 'الدعم',
+    'navbar.myBookings': 'حجوزاتي',
+    'navbar.watchlist': 'المفضلة',
+    'navbar.conditionReport': 'الحالة',
+    'navbar.damageReport': 'الأضرار',
+    'navbar.notifications': 'الإشعارات',
+    'navbar.profile': 'ملفي',
+    'navbar.login': 'تسجيل الدخول',
+    'navbar.dashboard': 'لوحة القيادة',
+    'navbar.language': 'اللغة',
+    'navbar.english': 'English',
+    'navbar.arabic': 'العربية',
+    'navbar.toggleTheme': 'تغيير المظهر',
+    'navbar.openMenu': 'فتح القائمة',
+    'navbar.closeMenu': 'إغلاق القائمة',
+    'navbar.lightMode': 'الوضع المضيء',
+    'navbar.darkMode': 'الوضع المظلم',
 
     // Hero
     'hero.title1': 'سيارتك، كل شهر',
