@@ -1,11 +1,9 @@
 import { requireAdmin } from '@/lib/admin'
-import { Megaphone, Users, Gift, TrendingUp, ChevronRight } from 'lucide-react'
-import Link from 'next/link'
+import { Megaphone, Users, Gift, TrendingUp } from 'lucide-react'
 
 export default async function AdminMarketingPage() {
   const { supabase } = await requireAdmin()
 
-  // Fetch recent notifications/campaigns as a proxy for marketing activity
   const { data: campaigns, error } = await supabase
     .from('notifications')
     .select('id, title, body, type, is_read, created_at, user_id')
@@ -13,15 +11,13 @@ export default async function AdminMarketingPage() {
     .limit(10)
 
   if (error) {
-    // Fallback if table structure varies, just show empty state gracefully
     console.log('Marketing data fetch note:', error.message)
   }
 
   const allCampaigns = campaigns ?? []
 
-  // Mock stats (In a real app, these would be aggregated from DB)
   const stats = {
-    totalSubscribers: 1240, // Example: Total customers with notifications enabled
+    totalSubscribers: 1240,
     activeCampaigns: 3,
     avgOpenRate: '68%',
   }
@@ -36,7 +32,6 @@ export default async function AdminMarketingPage() {
         </p>
       </div>
 
-      {/* Stats Cards */}
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
           <div className="flex items-center gap-3">
@@ -73,7 +68,6 @@ export default async function AdminMarketingPage() {
         </div>
       </div>
 
-      {/* Recent Campaigns / Notifications List */}
       <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)]">
         <div className="flex items-center justify-between border-b border-[var(--border)] p-6">
           <div className="flex items-center gap-2">
@@ -81,7 +75,7 @@ export default async function AdminMarketingPage() {
             <h2 className="text-lg font-bold">Recent Campaigns & Notifications</h2>
           </div>
           <button className="flex items-center gap-1 text-sm font-semibold text-[var(--accent)] hover:underline">
-            Create New Campaign <ChevronRight className="h-4 w-4" />
+            Create New Campaign →
           </button>
         </div>
         
