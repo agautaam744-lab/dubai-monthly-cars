@@ -1,4 +1,4 @@
-import { requireAdmin } from '@/lib/admin'
+﻿import { requireAdmin } from '@/lib/admin'
 import { Megaphone, Users, Gift, TrendingUp } from 'lucide-react'
 
 export default async function AdminMarketingPage() {
@@ -16,10 +16,32 @@ export default async function AdminMarketingPage() {
 
   const allCampaigns = campaigns ?? []
 
+  // Real subscriber count: all registered customers
+  const { count: totalSubscribers } = await supabase
+    .from('profiles')
+    .select('id', { count: 'exact', head: true })
+    .eq('role', 'customer')
+
+  // Real notification counts (all-time, not just the last 10 shown below)
+  const { count: totalNotifications } = await supabase
+    .from('notifications')
+    .select('id', { count: 'exact', head: true })
+
+  const { count: unreadNotifications } = await supabase
+    .from('notifications')
+    .select('id', { count: 'exact', head: true })
+    .eq('is_read', false)
+
+  const readCount = (totalNotifications ?? 0) - (unreadNotifications ?? 0)
+  const engagementRate =
+    totalNotifications && totalNotifications > 0
+      ? Math.round((readCount / totalNotifications) * 100)
+      : 0
+
   const stats = {
-    totalSubscribers: 1240,
-    activeCampaigns: 3,
-    avgOpenRate: '68%',
+    totalSubscribers: totalSubscribers ?? 0,
+    activeCampaigns: unreadNotifications ?? 0,
+    avgOpenRate: `${engagementRate}%`,
   }
 
   return (
