@@ -1,5 +1,8 @@
 import { requireAdmin } from '@/lib/admin'
 import { AlertTriangle, CheckCircle, DollarSign, FileText, Car } from 'lucide-react'
+import DamageActions from './DamageActions'
+import type { DamageReportRow } from '@/types/database'
+import { first } from '@/types/database'
 
 export default async function AdminDamagePage() {
   const { supabase } = await requireAdmin()
@@ -25,7 +28,7 @@ export default async function AdminDamagePage() {
     return <div className="p-8 text-red-500">Error: {error.message}</div>
   }
 
-  const allReports = reports ?? []
+  const allReports = (reports ?? []) as DamageReportRow[]
   const underReview = allReports.filter(r => r.status === 'under_review').length
   const charged = allReports.filter(r => r.status === 'charged').length
   const resolved = allReports.filter(r => r.status === 'resolved').length
@@ -86,10 +89,10 @@ export default async function AdminDamagePage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {allReports.map((report: any) => {
-            const booking = report.bookings
-            const vehicle = booking?.vehicles
-            const customer = booking?.profiles
+          {allReports.map((report) => {
+            const booking = report.bookings ?? null
+            const vehicle = first(booking?.vehicles ?? null)
+            const customer = first(booking?.profiles ?? null)
 
             return (
               <div key={report.id} className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
@@ -118,7 +121,7 @@ export default async function AdminDamagePage() {
                         <span className="font-semibold">Issue:</span> {report.description || 'No description provided'}
                       </p>
                       <p className="mt-1 text-xs text-[var(--muted-foreground)]">
-                        Plate: {vehicle?.plate_number || 'N/A'} · Reported: {new Date(report.created_at).toLocaleDateString('en-AE')}
+                        Plate: {vehicle?.plate_number || 'N/A'} · Reported: {report.created_at ? new Date(report.created_at).toLocaleDateString('en-AE') : '—'}
                       </p>
                     </div>
                   </div>
@@ -135,6 +138,11 @@ export default async function AdminDamagePage() {
                         <DollarSign className="h-3 w-3" /> Charged to Deposit
                       </span>
                     )}
+                    <DamageActions
+                      id={report.id}
+                      estimated={Number(report.estimated_cost_aed || 0)}
+                      status={report.status}
+                    />
                   </div>
                 </div>
               </div>

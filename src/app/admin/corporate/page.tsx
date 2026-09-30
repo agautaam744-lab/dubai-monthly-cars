@@ -1,5 +1,8 @@
 import { requireAdmin } from '@/lib/admin'
-import { Briefcase, Building2, Users, DollarSign, AlertCircle } from 'lucide-react'
+import { Briefcase, Building2, Users, DollarSign } from 'lucide-react'
+import CorporateForm from './CorporateForm'
+import CorporateActions from './CorporateActions'
+import type { CorporateAccountRow } from '@/types/database'
 
 export default async function AdminCorporatePage() {
   const { supabase } = await requireAdmin()
@@ -14,7 +17,7 @@ export default async function AdminCorporatePage() {
     return <div className="p-8 text-red-500">Error loading corporate accounts: {error.message}</div>
   }
 
-  const allAccounts = accounts ?? []
+  const allAccounts = (accounts ?? []) as CorporateAccountRow[]
 
   // Calculate stats
   const active = allAccounts.filter(a => a.status === 'active').length
@@ -67,6 +70,9 @@ export default async function AdminCorporatePage() {
       </div>
 
       {/* Accounts List */}
+      <div className="mb-8">
+        <CorporateForm />
+      </div>
       {allAccounts.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--card)] p-12 text-center">
           <Briefcase className="mx-auto h-12 w-12 text-[var(--muted-foreground)]" />
@@ -75,7 +81,7 @@ export default async function AdminCorporatePage() {
         </div>
       ) : (
         <div className="space-y-3">
-          {allAccounts.map((account: any) => (
+          {allAccounts.map((account) => (
             <div key={account.id} className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-start gap-4">
@@ -105,6 +111,9 @@ export default async function AdminCorporatePage() {
                   <p className="text-xs text-[var(--muted-foreground)] mt-1">
                     {account.guaranteed_vehicles || 0} Vehicles Guaranteed
                   </p>
+                  <div className="mt-2">
+                    <CorporateActions id={account.id} status={account.status} />
+                  </div>
                 </div>
               </div>
             </div>

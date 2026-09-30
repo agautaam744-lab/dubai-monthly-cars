@@ -115,6 +115,9 @@ export default function ConditionReportForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      <p className="rounded-xl bg-[var(--muted)]/50 px-3 py-2 text-xs font-medium text-[var(--muted-foreground)]">
+        Vehicle: {vehicleName}
+      </p>
       <div>
         <label className="mb-2 flex items-center gap-2 text-sm font-medium">
           <Gauge className="h-4 w-4 text-[var(--accent)]" />

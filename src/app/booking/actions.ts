@@ -305,10 +305,6 @@ export async function createBookingFromSelection(
       )
     })
 
-  const monthlyAddOnTotal = selectedAddOns
-    .filter((item) => item.price_type === 'monthly')
-    .reduce((sum, item) => sum + item.price_aed, 0)
-
   let oneTimeAddOnTotal = selectedAddOns
     .filter((item) => item.price_type === 'one_time')
     .reduce((sum, item) => sum + item.price_aed, 0)
@@ -336,9 +332,9 @@ export async function createBookingFromSelection(
         price_type: feeType,
       })
 
-      if (feeType === 'monthly') {
-        // monthly fee also gets the duration discount below
-      } else {
+      // Monthly auto-added fees join selectedAddOns and get the duration
+      // discount via autoMonthlyDelivery below; one-time fees add here.
+      if (feeType !== 'monthly') {
         oneTimeAddOnTotal += fee
       }
     }

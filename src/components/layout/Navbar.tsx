@@ -35,15 +35,22 @@ export default function Navbar() {
   const { theme, setTheme } = useTheme()
 
   useEffect(() => {
-    setMounted(true)
+    let cancelled = false
     const supabase = createClient()
+    // State is set inside async/subscription callbacks (external-system sync),
+    // which also flips `mounted` once the first auth result arrives.
     supabase.auth.getUser().then(({ data }) => {
+      if (cancelled) return
       setIsLoggedIn(!!data.user)
+      setMounted(true)
     })
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (cancelled) return
       setIsLoggedIn(!!session?.user)
+      setMounted(true)
     })
     return () => {
+      cancelled = true
       listener.subscription.unsubscribe()
     }
   }, [])

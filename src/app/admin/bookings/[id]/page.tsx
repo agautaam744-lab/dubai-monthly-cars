@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ChevronLeft, Car, Calendar, User, CreditCard, FileText } from 'lucide-react'
 import { requireAdmin } from '@/lib/admin'
+import BookingManager from './BookingManager'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -138,6 +139,8 @@ export default async function BookingDetailPage({ params }: Props) {
             </p>
           )}
         </div>
+
+        <BookingManager bookingId={booking.id} status={booking.status} />
       </div>
     </div>
   )

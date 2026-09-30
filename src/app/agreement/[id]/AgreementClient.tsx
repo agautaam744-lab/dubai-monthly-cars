@@ -85,13 +85,15 @@ export default function AgreementClient({
     return () => window.removeEventListener('resize', setup)
   }, [])
 
-  const getCoordinates = (e: any) => {
+  type PointerEvent = React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>
+
+  const getCoordinates = (e: PointerEvent) => {
     const canvas = canvasRef.current
     if (!canvas) return { x: 0, y: 0 }
 
     const rect = canvas.getBoundingClientRect()
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
 
     return {
       x: clientX - rect.left,
@@ -99,7 +101,7 @@ export default function AgreementClient({
     }
   }
 
-  const startDrawing = (e: any) => {
+  const startDrawing = (e: PointerEvent) => {
     e.preventDefault()
     const canvas = canvasRef.current
     const ctx = canvas?.getContext('2d')
@@ -111,7 +113,7 @@ export default function AgreementClient({
     setIsDrawing(true)
   }
 
-  const draw = (e: any) => {
+  const draw = (e: PointerEvent) => {
     if (!isDrawing) return
     e.preventDefault()
 

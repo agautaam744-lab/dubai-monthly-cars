@@ -5,7 +5,10 @@ import { redirect } from 'next/navigation'
 
 const adminRoles = ['super_admin', 'fleet_manager', 'finance', 'support', 'delivery']
 
-export async function adminLogin(prevState: any, formData: FormData) {
+export async function adminLogin(
+  _prevState: { error: string | null },
+  formData: FormData
+) {
   const email = String(formData.get('email') || '').trim()
   const password = String(formData.get('password') || '')
 

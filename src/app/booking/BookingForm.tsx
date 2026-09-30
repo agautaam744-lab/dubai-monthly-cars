@@ -239,8 +239,8 @@ export function BookingForm({
         const next =
           window.location.pathname + window.location.search
 
-        window.location.href =
-          `/kyc?next=${encodeURIComponent(next)}`
+        setSubmitting(false)
+        router.push(`/kyc?next=${encodeURIComponent(next)}`)
 
         return
       }

@@ -15,12 +15,12 @@ import {
   CheckCircle2,
   XCircle,
   Wrench,
-  DollarSign,
+  type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { deleteVehicle, updateVehicleStatus } from './actions'
 
-type Vehicle = {
+export type Vehicle = {
   id: string
   make: string
   model: string
@@ -46,7 +46,7 @@ function formatAED(value: number) {
   }).format(value)
 }
 
-const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
+const statusConfig: Record<string, { label: string; color: string; icon: LucideIcon }> = {
   available: {
     label: 'Available',
     color: 'bg-green-500/10 text-green-600',

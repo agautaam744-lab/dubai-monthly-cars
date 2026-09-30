@@ -2,8 +2,10 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import type { BookingRow } from '@/types/database'
+import { first } from '@/types/database'
 
-export default function ReviewForm({ bookings }: { bookings: any[] }) {
+export default function ReviewForm({ bookings }: { bookings: BookingRow[] }) {
   const [bookingId, setBookingId] = useState(bookings[0]?.id ?? '')
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState('')
@@ -22,7 +24,7 @@ export default function ReviewForm({ bookings }: { bookings: any[] }) {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not logged in')
-      const { error } = await supabase.from('reviews' as any).insert({
+      const { error } = await supabase.from('reviews').insert({
         booking_id: bookingId,
         customer_id: user.id,
         rating,
@@ -43,8 +45,8 @@ export default function ReviewForm({ bookings }: { bookings: any[] }) {
       <label className="block text-sm">
         <span className="mb-2 block font-medium">Booking</span>
         <select value={bookingId} onChange={(e) => setBookingId(e.target.value)} className="min-h-[46px] w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3">
-          {bookings.map((b: any) => {
-            const v = Array.isArray(b.vehicles) ? b.vehicles[0] : b.vehicles
+          {bookings.map((b) => {
+            const v = first(b.vehicles ?? null)
             return <option key={b.id} value={b.id}>{v ? `${v.make} ${v.model}` : b.id.slice(0, 8)} · {b.status}</option>
           })}
         </select>

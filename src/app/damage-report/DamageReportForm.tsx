@@ -102,6 +102,9 @@ export default function DamageReportForm({ bookingId, vehicleName }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      <p className="rounded-xl bg-[var(--muted)]/50 px-3 py-2 text-xs font-medium text-[var(--muted-foreground)]">
+        Vehicle: {vehicleName}
+      </p>
       <div>
         <label className="mb-2 flex items-center gap-2 text-sm font-medium">
           <FileText className="h-4 w-4 text-[var(--accent)]" />
@@ -131,7 +134,7 @@ export default function DamageReportForm({ bookingId, vehicleName }: Props) {
           className="min-h-[48px] w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 text-sm outline-none focus:ring-2 focus:ring-[var(--ring)]"
         />
         <p className="mt-1 text-xs text-[var(--muted-foreground)]">
-          Leave blank if you don't know. Our team will assess it.
+          Leave blank if you don&apos;t know. Our team will assess it.
         </p>
       </div>
 

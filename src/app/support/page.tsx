@@ -6,8 +6,10 @@ import {
   ChevronRight,
   Clock,
   AlertCircle,
+  Phone,
 } from 'lucide-react'
 import NewTicketForm from './NewTicketForm'
+import RoadsideButton from './RoadsideButton'
 
 export default async function SupportPage() {
   const supabase = await createClient()
@@ -37,6 +39,8 @@ export default async function SupportPage() {
 
   const formatTime = (dateStr: string) => {
     const date = new Date(dateStr)
+    // Relative labels are computed once per server render (static output).
+    // eslint-disable-next-line react-hooks/purity -- Date.now is intentional here
     const days = Math.floor((Date.now() - date.getTime()) / 86400000)
     if (days === 0) return 'Today'
     if (days === 1) return 'Yesterday'
@@ -57,6 +61,24 @@ export default async function SupportPage() {
           </p>
         </div>
         <NewTicketForm />
+      </div>
+
+      <div className="mb-6 grid gap-3 sm:grid-cols-2">
+        <a
+          href="tel:+9718000000"
+          className="flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 transition hover:border-[var(--accent)]/50"
+        >
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-500/10">
+            <Phone className="h-5 w-5 text-green-500" />
+          </span>
+          <span>
+            <span className="block text-sm font-semibold">Call support — 800-0000</span>
+            <span className="block text-xs text-[var(--muted-foreground)]">24/7 in-app call support</span>
+          </span>
+        </a>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
+          <RoadsideButton />
+        </div>
       </div>
 
       {!tickets || tickets.length === 0 ? (

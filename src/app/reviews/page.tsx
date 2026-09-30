@@ -2,8 +2,17 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Star } from 'lucide-react'
 import ReviewForm from './ReviewForm'
+import type { BookingRow } from '@/types/database'
 
 export const metadata = { title: 'Ratings & Reviews | Dubai Monthly Cars' }
+
+interface ReviewRow {
+  id: string
+  booking_id?: string | null
+  rating?: number | null
+  comment?: string | null
+  created_at?: string
+}
 
 export default async function ReviewsPage() {
   const supabase = await createClient()
@@ -18,16 +27,16 @@ export default async function ReviewsPage() {
     .order('created_at', { ascending: false })
     .limit(10)
 
-  let reviews: any[] = []
+  let reviews: ReviewRow[] = []
   const { data: reviewRows } = await supabase
-    .from('reviews' as any)
+    .from('reviews')
     .select('id, booking_id, rating, comment, created_at')
     .eq('customer_id', user.id)
     .order('created_at', { ascending: false })
     .limit(20)
 
   // Table may not exist on older DBs — fail soft.
-  if (reviewRows) reviews = reviewRows as any[]
+  if (reviewRows) reviews = reviewRows as ReviewRow[]
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 min-h-screen bg-[var(--background)]">
@@ -36,7 +45,7 @@ export default async function ReviewsPage() {
       <p className="mt-2 text-sm text-[var(--muted-foreground)]">Reviews are collected after each rental period and help other renters.</p>
 
       <div className="mt-8">
-        <ReviewForm bookings={bookings ?? []} />
+        <ReviewForm bookings={(bookings ?? []) as BookingRow[]} />
       </div>
 
       <div className="mt-8 space-y-3">
@@ -46,7 +55,7 @@ export default async function ReviewsPage() {
             <p className="mt-3">No reviews yet. Submit your first review above.</p>
           </div>
         ) : (
-          reviews.map((r: any) => (
+          reviews.map((r) => (
             <div key={r.id} className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
               <p className="font-semibold">{'★'.repeat(Number(r.rating) || 0)} ({r.rating}/5)</p>
               <p className="mt-1 text-sm">{r.comment}</p>

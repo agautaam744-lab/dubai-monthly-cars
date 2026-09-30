@@ -33,6 +33,13 @@ export default async function AdminStaffPage() {
   const staff = staffRes.data ?? []
   const customers = customersRes.data ?? []
 
+  const { data: activity } = await supabase
+    .from('activity_logs')
+    .select('id, actor_id, action, entity_type, entity_id, created_at')
+    .order('created_at', { ascending: false })
+    .limit(20)
+  const activityMissing = activity == null
+
   const stats = [
     { label: 'Total Staff', value: staff.length, icon: Users, color: 'text-[var(--accent)] bg-[var(--accent)]/10' },
     { label: 'Super Admins', value: staff.filter((s) => s.role === 'super_admin').length, icon: Shield, color: 'text-purple-500 bg-purple-500/10' },
@@ -141,8 +148,7 @@ export default async function AdminStaffPage() {
         )}
       </div>
 
-      {/* Promote Customer */}
-      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)]">
+      {/* Promote Customer */}      <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)]">
         <div className="border-b border-[var(--border)] p-5">
           <div className="flex items-center gap-2">
             <UserPlus className="h-5 w-5 text-[var(--accent)]" />
@@ -195,6 +201,37 @@ export default async function AdminStaffPage() {
                     Promote
                   </button>
                 </form>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Activity Log */}
+      <div className="mt-8 rounded-2xl border border-[var(--border)] bg-[var(--card)]">
+        <div className="border-b border-[var(--border)] p-5">
+          <h2 className="font-semibold">Activity Log</h2>
+          <p className="mt-0.5 text-xs text-[var(--muted-foreground)]">Recent admin actions across the panel.</p>
+        </div>
+        {activityMissing ? (
+          <p className="p-5 text-sm text-[var(--muted-foreground)]">
+            The <code>activity_logs</code> table is not provisioned yet — admin actions are still processed, just not listed here.
+          </p>
+        ) : (activity ?? []).length === 0 ? (
+          <p className="p-5 text-sm text-[var(--muted-foreground)]">No admin activity recorded yet.</p>
+        ) : (
+          <div className="divide-y divide-[var(--border)]">
+            {(activity ?? []).map((a: { id: string; action: string; entity_type?: string | null; entity_id?: string | null; created_at?: string | null }) => (
+              <div key={a.id} className="flex items-center justify-between gap-3 px-5 py-3 text-sm">
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{String(a.action).replace(/_/g, ' ')}</p>
+                  <p className="truncate text-xs text-[var(--muted-foreground)]">
+                    {a.entity_type ?? ''} {a.entity_id ? `· ${String(a.entity_id).slice(0, 8)}` : ''}
+                  </p>
+                </div>
+                <span className="shrink-0 text-xs text-[var(--muted-foreground)]">
+                  {a.created_at ? new Date(a.created_at).toLocaleDateString('en-AE', { month: 'short', day: 'numeric' }) : ''}
+                </span>
               </div>
             ))}
           </div>

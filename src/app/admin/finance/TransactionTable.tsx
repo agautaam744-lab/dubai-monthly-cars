@@ -2,21 +2,22 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, CheckCircle2, XCircle, Clock, RotateCcw, DollarSign } from 'lucide-react'
-import { refundPayment } from './actions'
+import { Search, CheckCircle2, XCircle, Clock, RotateCcw, DollarSign, RefreshCw, type LucideIcon } from 'lucide-react'
+import { refundPayment, retryFailedPayment } from './actions'
+import type { PaymentRow } from '@/types/database'
 
 function formatAED(value: number) {
   return new Intl.NumberFormat('en-AE', { style: 'currency', currency: 'AED', maximumFractionDigits: 0 }).format(value)
 }
 
-const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
+const statusConfig: Record<string, { label: string; color: string; icon: LucideIcon }> = {
   succeeded: { label: 'Succeeded', color: 'bg-green-500/10 text-green-600', icon: CheckCircle2 },
   pending: { label: 'Pending', color: 'bg-yellow-500/10 text-yellow-600', icon: Clock },
   failed: { label: 'Failed', color: 'bg-red-500/10 text-red-600', icon: XCircle },
   refunded: { label: 'Refunded', color: 'bg-blue-500/10 text-blue-600', icon: RotateCcw },
 }
 
-export default function TransactionTable({ payments }: { payments: any[] }) {
+export default function TransactionTable({ payments }: { payments: PaymentRow[] }) {
   const router = useRouter()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -26,7 +27,7 @@ export default function TransactionTable({ payments }: { payments: any[] }) {
     if (search.trim()) {
       const q = search.toLowerCase()
       const customer = Array.isArray(p.profiles) ? p.profiles[0] : p.profiles
-      return p.id.toLowerCase().includes(q) || customer?.email?.toLowerCase().includes(q) || p.type.toLowerCase().includes(q)
+      return p.id.toLowerCase().includes(q) || customer?.email?.toLowerCase().includes(q) || (p.type ?? '').toLowerCase().includes(q)
     }
     return true
   })
@@ -34,6 +35,12 @@ export default function TransactionTable({ payments }: { payments: any[] }) {
   const handleRefund = async (id: string) => {
     if (!confirm('Process refund?')) return
     await refundPayment(id)
+    router.refresh()
+  }
+
+  const handleRetry = async (id: string) => {
+    if (!confirm('Retry this failed billing?')) return
+    await retryFailedPayment(id)
     router.refresh()
   }
 
@@ -106,7 +113,7 @@ export default function TransactionTable({ payments }: { payments: any[] }) {
                       <p className="font-medium">{customer?.full_name ?? 'Unknown'}</p>
                       <p className="text-xs text-[var(--muted-foreground)]">{customer?.email ?? ''}</p>
                     </td>
-                    <td className="px-5 py-4 capitalize">{p.type.replace('_', ' ')}</td>
+                    <td className="px-5 py-4 capitalize">{(p.type ?? 'payment').replace('_', ' ')}</td>
                     <td className="px-5 py-4 font-semibold">{formatAED(Number(p.amount_aed))}</td>
                     <td className="px-5 py-4">
                       <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${config.color}`}>
@@ -114,18 +121,31 @@ export default function TransactionTable({ payments }: { payments: any[] }) {
                       </span>
                     </td>
                     <td className="px-5 py-4 text-xs text-[var(--muted-foreground)]">
-                      {new Date(p.paid_at || p.created_at).toLocaleDateString('en-AE', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      {p.paid_at || p.created_at
+                        ? new Date((p.paid_at || p.created_at) as string).toLocaleDateString('en-AE', { month: 'short', day: 'numeric', year: 'numeric' })
+                        : '—'}
                     </td>
                     <td className="px-5 py-4 text-right">
-                      {p.status === 'succeeded' && (
-                        <button
-                          type="button"
-                          onClick={() => handleRefund(p.id)}
-                          className="inline-flex items-center gap-1.5 rounded-lg border border-red-500/30 px-3 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-500/10"
-                        >
-                          <RotateCcw className="h-3 w-3" /> Refund
-                        </button>
-                      )}
+                      <div className="flex justify-end gap-2">
+                        {p.status === 'failed' && (
+                          <button
+                            type="button"
+                            onClick={() => handleRetry(p.id)}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-yellow-500/30 px-3 py-1.5 text-xs font-semibold text-yellow-600 hover:bg-yellow-500/10"
+                          >
+                            <RefreshCw className="h-3 w-3" /> Retry
+                          </button>
+                        )}
+                        {p.status === 'succeeded' && (
+                          <button
+                            type="button"
+                            onClick={() => handleRefund(p.id)}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-red-500/30 px-3 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-500/10"
+                          >
+                            <RotateCcw className="h-3 w-3" /> Refund
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 )

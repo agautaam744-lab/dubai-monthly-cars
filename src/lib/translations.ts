@@ -94,6 +94,41 @@ export const translations: Record<Language, Record<string, string>> = {
     'common.light': 'Light',
     'common.dark': 'Dark',
     'common.system': 'System',
+
+    // Subscription management
+    'sub.title': 'Manage Subscription',
+    'sub.autoRenew': 'Monthly auto-renewal',
+    'sub.autoRenewOn': 'On — rental continues automatically with monthly billing.',
+    'sub.autoRenewOff': 'Off — rental ends after the current period.',
+    'sub.turnOn': 'Turn on',
+    'sub.turnOff': 'Turn off',
+    'sub.extend': 'Extend',
+    'sub.endEarly': 'End early',
+    'sub.swap': 'Swap car',
+    'sub.sendRequest': 'Send request',
+    'sub.requestSent': 'Request sent. Our team will review it under Support tickets.',
+    'sub.extendPh': 'How many extra months? E.g. extend by 3 months from current end date.',
+    'sub.endPh': 'Reason and preferred end date.',
+    'sub.swapPh': 'Which car would you like instead? Upgrades may change the monthly price.',
+
+    // Roadside
+    'roadside.request': 'Request roadside assistance',
+    'roadside.call': '800-0000 (24/7)',
+    'roadside.done': 'Assistance requested — we will call you back immediately.',
+    'roadside.confirm': 'Request roadside assistance now? This opens an URGENT ticket.',
+
+    // Wallet / trips
+    'wallet.title': 'Wallet Balance',
+    'wallet.desc': 'Refunds, referral payouts and promo credits land here.',
+    'trips.title': 'Trip & Mileage History',
+    'trips.empty': 'No mileage logs yet. Odometer readings from pickup and return condition reports appear here.',
+
+    // Availability / fuel
+    'avail.title': 'Availability — next 60 days',
+    'avail.free': 'Free all 60 days',
+    'avail.available': 'Available',
+    'avail.booked': 'Booked',
+    'fuel.title': 'Fuel policy',
   },
   ar: {
     // Nav
@@ -188,5 +223,40 @@ export const translations: Record<Language, Record<string, string>> = {
     'common.light': 'فاتح',
     'common.dark': 'داكن',
     'common.system': 'النظام',
+
+    // Subscription management
+    'sub.title': 'إدارة الاشتراك',
+    'sub.autoRenew': 'التجديد الشهري التلقائي',
+    'sub.autoRenewOn': 'مفعّل — يستمر الإيجار تلقائياً مع الفوترة الشهرية.',
+    'sub.autoRenewOff': 'متوقف — ينتهي الإيجار بعد الفترة الحالية.',
+    'sub.turnOn': 'تفعيل',
+    'sub.turnOff': 'إيقاف',
+    'sub.extend': 'تمديد',
+    'sub.endEarly': 'إنهاء مبكر',
+    'sub.swap': 'استبدال السيارة',
+    'sub.sendRequest': 'إرسال الطلب',
+    'sub.requestSent': 'تم إرسال الطلب. سيراجعه فريقنا ضمن تذاكر الدعم.',
+    'sub.extendPh': 'كم شهراً إضافياً؟ مثال: التمديد 3 أشهر من تاريخ النهاية الحالي.',
+    'sub.endPh': 'السبب وتاريخ النهاية المفضل.',
+    'sub.swapPh': 'أي سيارة تريد بدلاً منها؟ قد تغيّر الترقية السعر الشهري.',
+
+    // Roadside
+    'roadside.request': 'طلب المساعدة على الطريق',
+    'roadside.call': '800-0000 (24/7)',
+    'roadside.done': 'تم طلب المساعدة — سنتصل بك فوراً.',
+    'roadside.confirm': 'طلب المساعدة على الطريق الآن؟ سيؤدي هذا إلى فتح تذكرة عاجلة.',
+
+    // Wallet / trips
+    'wallet.title': 'رصيد المحفظة',
+    'wallet.desc': 'تصل المبالغ المستردة ومكافآت الإحالة وأرصدة العروض إلى هنا.',
+    'trips.title': 'سجل الرحلات والمسافة',
+    'trips.empty': 'لا توجد سجلات مسافة بعد. تظهر قراءات العداد من تقارير الحالة هنا.',
+
+    // Availability / fuel
+    'avail.title': 'التوفر — 60 يوماً القادمة',
+    'avail.free': 'متاح طوال الـ 60 يوماً',
+    'avail.available': 'متاح',
+    'avail.booked': 'محجوز',
+    'fuel.title': 'سياسة الوقود',
   },
 }

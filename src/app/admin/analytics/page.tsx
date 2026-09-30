@@ -155,7 +155,7 @@ export default async function AdminAnalyticsPage() {
             <h2 className="font-semibold">Booking Funnel</h2>
           </div>
           <div className="space-y-4">
-            {funnelStages.map((stage, i) => {
+            {funnelStages.map((stage) => {
               const widthPercent = (stage.value / maxFunnel) * 100
               return (
                 <div key={stage.label}>

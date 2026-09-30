@@ -4,7 +4,6 @@ import {
   Clock,
   XCircle,
   RotateCcw,
-  Users,
   CreditCard,
 } from 'lucide-react'
 import { requireAdmin } from '@/lib/admin'
@@ -13,6 +12,7 @@ import RevenueChart from './RevenueChart'
 import StatusDonut from './StatusDonut'
 import TypeBreakdown from './TypeBreakdown'
 import TopCustomers from './TopCustomers'
+import PromoManager from './PromoManager'
 
 function formatAED(value: number) {
   return new Intl.NumberFormat('en-AE', {
@@ -55,7 +55,6 @@ export default async function AdminFinancePage() {
   const refundedAmount = all.filter((p) => p.status === 'refunded').reduce((s, p) => s + Number(p.amount_aed || 0), 0)
   const vat = totalRevenue * 0.05
   const netRevenue = totalRevenue - vat
-  const uniqueCustomers = new Set(all.map((p) => p.customer_id)).size
 
   // Stats
   const stats = [
@@ -109,6 +108,12 @@ export default async function AdminFinancePage() {
   })
   const topCustomers = Array.from(customerMap.values()).sort((a, b) => b.total - a.total).slice(0, 5)
 
+  const { data: promos } = await supabase
+    .from('promo_codes')
+    .select('id, code, discount_percent, max_uses, is_active, expires_at')
+    .order('created_at', { ascending: false })
+  const promosMissing = promos == null
+
   return (
     <div className="p-6 sm:p-8">
       {/* Header */}
@@ -155,6 +160,11 @@ export default async function AdminFinancePage() {
       {/* Top Customers */}
       <div className="mb-8">
         <TopCustomers customers={topCustomers} />
+      </div>
+
+      {/* Promo Codes */}
+      <div className="mb-8">
+        <PromoManager promos={promos ?? []} missingTable={promosMissing} />
       </div>
 
       {/* Transactions Table */}

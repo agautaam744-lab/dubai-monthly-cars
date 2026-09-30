@@ -37,7 +37,19 @@ export default async function ProfilePage() {
     .eq('customer_id', user.id)
     .eq('status', 'succeeded')
     .order('created_at', { ascending: false })
-    .limit(3)
+    .limit(10)
+
+  const methods = Array.from(
+    new Map(
+      (payments ?? [])
+        .filter((p) => p.provider)
+        .map((p) => [String(p.provider), p] as const)
+    ).values()
+  )
+
+  const walletBalance = (payments ?? [])
+    .filter((p) => ['wallet_credit', 'refund', 'referral_payout'].includes(String(p.type)))
+    .reduce((sum, p) => sum + Number(p.amount_aed || 0), 0)
 
   const formatAED = (v: number) =>
     new Intl.NumberFormat('en-AE', {
@@ -168,6 +180,42 @@ export default async function ProfilePage() {
             ))}
           </div>
         )}
+      </section>
+
+      {/* Wallet + Payment Methods */}
+      <section className="mt-6 grid gap-3 sm:grid-cols-2">
+        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
+          <p className="text-xs text-[var(--muted-foreground)]">Wallet Balance</p>
+          <p className="mt-1 text-2xl font-bold">{formatAED(walletBalance)}</p>
+          <p className="mt-1 text-xs text-[var(--muted-foreground)]">
+            Refunds, referral payouts and promo credits land here.
+          </p>
+        </div>
+        <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
+          <div className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5 text-[var(--accent)]" />
+            <h2 className="font-semibold">Payment Methods</h2>
+          </div>
+          {methods.length === 0 ? (
+            <p className="mt-3 text-sm text-[var(--muted-foreground)]">
+              No saved methods yet. One is recorded automatically after your first payment.
+            </p>
+          ) : (
+            <ul className="mt-3 space-y-2">
+              {methods.map((m) => (
+                <li
+                  key={String(m.provider)}
+                  className="flex items-center justify-between rounded-xl bg-[var(--muted)]/50 px-3 py-2 text-sm"
+                >
+                  <span className="font-medium capitalize">{String(m.provider).replace(/_/g, ' ')}</span>
+                  <span className="text-xs text-[var(--muted-foreground)]">
+                    Last used {formatDate(m.paid_at)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </section>
 
       {/* Recent Payments */}

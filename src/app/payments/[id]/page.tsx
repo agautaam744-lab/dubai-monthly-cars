@@ -15,8 +15,9 @@ import {
   AlertCircle,
   Sparkles,
   Home,
-  Package,
+  type LucideIcon,
 } from 'lucide-react'
+import InvoiceButton from '@/app/payments/InvoiceButton'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -103,7 +104,7 @@ export default async function BookingDetailPage({ params }: Props) {
   const addOnTotal = Number(booking.total_add_ons_aed || 0)
   const total = monthlyRent + deposit + addOnTotal
 
-  const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
+  const statusConfig: Record<string, { label: string; color: string; icon: LucideIcon }> = {
     pending_kyc: {
       label: 'Pending KYC',
       color: 'text-yellow-500 bg-yellow-500/10',
@@ -383,6 +384,9 @@ export default async function BookingDetailPage({ params }: Props) {
                   <span className="text-sm font-semibold">
                     {formatAED(Number(payment.amount_aed))}
                   </span>
+                  {payment.status === 'succeeded' && (
+                    <InvoiceButton paymentId={payment.id} />
+                  )}
                   <span
                     className={[
                       'rounded-full px-2.5 py-1 text-xs font-semibold',

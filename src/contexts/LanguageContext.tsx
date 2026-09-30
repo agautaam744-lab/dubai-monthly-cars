@@ -11,19 +11,17 @@ type LanguageContextType = {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
+function getInitialLang(): Language {
+  if (typeof window === 'undefined') return 'en'
+  const cookieMatch = document.cookie.match(/preferred_language=(en|ar)/)
+  const saved = (cookieMatch?.[1] ||
+    localStorage.getItem('preferred_language')) as Language | null
+  return saved === 'en' || saved === 'ar' ? saved : 'en'
+}
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Language>('en')
-
-  // Load saved language on mount (prefer cookie, fall back to localStorage)
-  useEffect(() => {
-    const cookieMatch = document.cookie.match(/preferred_language=(en|ar)/)
-    const savedLang = (cookieMatch?.[1] ||
-      localStorage.getItem('preferred_language')) as Language | null
-
-    if (savedLang === 'en' || savedLang === 'ar') {
-      setLangState(savedLang)
-    }
-  }, [])
+  // Lazy initializer reads the saved language synchronously (no mount effect needed)
+  const [lang, setLangState] = useState<Language>(getInitialLang)
 
   // Update HTML dir/lang attributes, localStorage, and cookie when language changes
   useEffect(() => {

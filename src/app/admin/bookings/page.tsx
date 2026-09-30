@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { requireAdmin } from '@/lib/admin'
 import { CalendarCheck, ChevronRight } from 'lucide-react'
+import type { BookingRow } from '@/types/database'
 
 export const metadata = {
   title: 'Bookings Management | Dubai Monthly Cars',
@@ -45,7 +46,7 @@ export default async function AdminBookingsPage({
     return <div className="p-8 text-red-500">Error: {error.message}</div>
   }
 
-  const all = bookings ?? []
+  const all = (bookings ?? []) as BookingRow[]
 
   return (
     <div className="p-6 sm:p-8">
@@ -74,7 +75,7 @@ export default async function AdminBookingsPage({
         </div>
       ) : (
         <div className="space-y-3">
-          {all.map((b: any) => {
+          {all.map((b) => {
             const v = Array.isArray(b.vehicles) ? b.vehicles[0] : b.vehicles
             const c = Array.isArray(b.profiles) ? b.profiles[0] : b.profiles
             return (

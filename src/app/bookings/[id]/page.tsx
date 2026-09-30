@@ -2,6 +2,8 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { ChevronLeft, Car, Calendar, CreditCard, FileText } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import ManageSubscription from './ManageSubscription'
+import RoadsideButton from '@/app/support/RoadsideButton'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -32,6 +34,7 @@ export default async function BookingDetailPage({ params }: Props) {
       monthly_price_aed,
       deposit_aed,
       total_add_ons_aed,
+      auto_renew,
       agreement_signed_at,
       created_at,
       vehicles ( make, model, year, plate_number ),
@@ -127,6 +130,16 @@ export default async function BookingDetailPage({ params }: Props) {
               Agreement not signed yet.
             </p>
           )}
+        </div>
+
+        <ManageSubscription
+          bookingId={booking.id}
+          autoRenew={(booking as { auto_renew?: boolean }).auto_renew ?? false}
+          status={booking.status}
+        />
+
+        <div className="lg:col-span-2">
+          <RoadsideButton bookingId={booking.id} />
         </div>
       </div>
     </div>

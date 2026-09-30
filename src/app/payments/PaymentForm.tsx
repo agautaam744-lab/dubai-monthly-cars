@@ -293,6 +293,25 @@ export default function PaymentForm({ booking, addOns }: Props) {
               </div>
             )}
 
+            {addOns.length > 0 && (
+              <div className="space-y-1.5 border-t border-dashed border-[var(--border)] pt-3">
+                {addOns.map((a) => {
+                  const info = Array.isArray(a.add_ons) ? a.add_ons[0] : a.add_ons
+                  if (!info) return null
+                  return (
+                    <div key={a.id} className="flex justify-between text-xs text-[var(--muted-foreground)]">
+                      <span>
+                        {info.name}
+                        {a.quantity > 1 ? ` × ${a.quantity}` : ''}
+                        {info.price_type === 'monthly' ? ' /mo' : ''}
+                      </span>
+                      <span>{formatAED(Number(a.price_aed))}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
             <div className="flex justify-between text-sm">
               <span className="text-[var(--muted-foreground)]">Security deposit</span>
               <span className="font-medium">{formatAED(deposit)}</span>

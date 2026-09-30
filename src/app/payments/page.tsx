@@ -66,7 +66,7 @@ export default async function PaymentsPage({
     `)
     .eq('booking_id', bookingId)
 
-  const addOns = (addOnRows ?? []).map((row: any) => ({
+  const addOns = (addOnRows ?? []).map((row: { id: string; quantity?: number | null; price_aed?: number | string | null; add_ons?: { name: string; price_type: string } | { name: string; price_type: string }[] | null }) => ({
     id: row.id,
     quantity: Number(row.quantity ?? 0),
     price_aed: row.price_aed ?? 0,

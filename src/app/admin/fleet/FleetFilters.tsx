@@ -2,9 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { Search, X } from 'lucide-react'
-import VehicleCard from './VehicleCard'
-
-type Vehicle = any
+import VehicleCard, { type Vehicle } from './VehicleCard'
 
 export default function FleetFilters({ vehicles }: { vehicles: Vehicle[] }) {
   const [search, setSearch] = useState('')
@@ -113,7 +111,7 @@ export default function FleetFilters({ vehicles }: { vehicles: Vehicle[] }) {
       {search && (
         <p className="text-sm text-[var(--muted-foreground)]">
           Found <span className="font-semibold">{filtered.length}</span> vehicle
-          {filtered.length !== 1 ? 's' : ''} matching "{search}"
+          {filtered.length !== 1 ? 's' : ''} matching &quot;{search}&quot;
         </p>
       )}
 

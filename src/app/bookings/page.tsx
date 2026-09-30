@@ -9,7 +9,6 @@ import {
   ShieldCheck,
   CreditCard,
   ChevronRight,
-  Trash2,
   FileText,
 } from 'lucide-react'
 
@@ -124,7 +123,7 @@ export default async function MyBookingsPage() {
             No bookings yet
           </h2>
           <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-            You haven't made any rental bookings yet.
+            You haven&apos;t made any rental bookings yet.
           </p>
           <Link
             href="/cars"

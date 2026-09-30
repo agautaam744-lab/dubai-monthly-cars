@@ -117,7 +117,7 @@ export default async function ConditionReportPage({
               )}
               {r.condition_report_photos?.length > 0 && (
                 <div className="mt-3 grid grid-cols-4 gap-2">
-                  {r.condition_report_photos.map((photo: any) => {
+                  {r.condition_report_photos.map((photo: { id: string; storage_path: string }) => {
                     const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/condition-photos/${photo.storage_path}`
                     return (
                       <a

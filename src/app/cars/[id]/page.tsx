@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import AvailabilityCalendar from './AvailabilityCalendar'
 
 type VehicleImage = {
   id: string
@@ -129,6 +130,11 @@ export default async function VehicleDetailsPage({
       (b.sort_order ?? 0)
   )
 
+  const { data: reservations } = await supabase
+    .from('bookings')
+    .select('start_date, end_date, status')
+    .eq('vehicle_id', id)
+
   return (
     <main className="min-h-screen bg-[var(--background)]">
       <section className="border-b border-[var(--border)] bg-[var(--muted)]">
@@ -225,6 +231,18 @@ export default async function VehicleDetailsPage({
                   {vehicle.location || 'Dubai'}
                 </p>
               </div>
+            </div>
+
+            <AvailabilityCalendar bookings={reservations ?? []} />
+
+            <div className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+              <h3 className="font-semibold">Fuel policy</h3>
+              <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
+                Same-to-same: return the car with the same fuel level as at pickup
+                ({vehicle.fuel_type || 'petrol'}). Refuelling charges plus a AED 50
+                service fee apply if returned lower. Electric vehicles: return with
+                at least 80% charge or a AED 75 charging fee applies.
+              </p>
             </div>
           </div>
 

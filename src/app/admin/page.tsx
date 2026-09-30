@@ -7,7 +7,10 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react'
+import Link from 'next/link'
 import { requireAdmin } from '@/lib/admin'
+import type { BookingRow } from '@/types/database'
+import { first } from '@/types/database'
 
 function formatAED(value: number) {
   return new Intl.NumberFormat('en-AE', {
@@ -180,12 +183,12 @@ export default async function AdminDashboardPage() {
             <TrendingUp className="h-5 w-5 text-[var(--accent)]" />
             <h2 className="font-semibold">Recent Bookings</h2>
           </div>
-          <a
+          <Link
             href="/admin/bookings"
             className="text-xs font-semibold text-[var(--accent)] hover:underline"
           >
             View all →
-          </a>
+          </Link>
         </div>
 
         {!recentBookings || recentBookings.length === 0 ? (
@@ -194,13 +197,9 @@ export default async function AdminDashboardPage() {
           </div>
         ) : (
           <div className="divide-y divide-[var(--border)]">
-            {recentBookings.map((booking: any) => {
-              const vehicle = Array.isArray(booking.vehicles)
-                ? booking.vehicles[0]
-                : booking.vehicles
-              const customer = Array.isArray(booking.profiles)
-                ? booking.profiles[0]
-                : booking.profiles
+            {((recentBookings ?? []) as BookingRow[]).map((booking) => {
+              const vehicle = first(booking.vehicles ?? null)
+              const customer = first(booking.profiles ?? null)
 
               return (
                 <div

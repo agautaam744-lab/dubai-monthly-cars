@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import Navbar from '@/components/layout/Navbar'
+import InvoiceButton from '@/app/payments/InvoiceButton'
 
 function formatAED(value: number) {
   return new Intl.NumberFormat('en-AE', {
@@ -168,6 +169,7 @@ export default async function DashboardPage() {
     { data: payments },
     { data: documents },
     { count: unreadNotifications },
+    { data: tripReports },
   ] = await Promise.all([
     supabase
       .from('profiles')
@@ -239,11 +241,28 @@ export default async function DashboardPage() {
       .select('*', { count: 'exact', head: true })
       .eq('user_id', user.id)
       .eq('is_read', false),
+    supabase
+      .from('condition_reports')
+      .select('id, booking_id, type, mileage, created_at')
+      .eq('reported_by', user.id)
+      .order('created_at', { ascending: false })
+      .limit(20),
   ])
 
   const allBookings = bookings ?? []
   const allPayments = payments ?? []
   const allDocs = documents ?? []
+  const allTripReports = tripReports ?? []
+
+  // Trip & mileage segments: pair pickup/return reports per booking.
+  const tripsByBooking = new Map<string, { pickup?: number; ret?: number; date: string }>()
+  for (const r of allTripReports) {
+    const entry = tripsByBooking.get(r.booking_id) ?? { date: String(r.created_at) }
+    if (r.type === 'pickup' && r.mileage != null) entry.pickup = Number(r.mileage)
+    if (r.type === 'return' && r.mileage != null) entry.ret = Number(r.mileage)
+    if (String(r.created_at) > String(entry.date)) entry.date = r.created_at
+    tripsByBooking.set(r.booking_id, entry)
+  }
 
   const activeBookings = allBookings.filter((b) => b.status === 'active')
   const pendingBookings = allBookings.filter((b) =>
@@ -274,6 +293,25 @@ export default async function DashboardPage() {
     (sum, p) => sum + Number(p.amount_aed || 0),
     0
   )
+
+  // Late-payment handling: 5% penalty on pending payments past due date.
+  const todayStr = new Date().toISOString().slice(0, 10)
+  const overduePayments = pendingPayments.filter(
+    (p) => p.due_date && String(p.due_date).slice(0, 10) < todayStr
+  )
+  const latePenalty = overduePayments.reduce(
+    (sum, p) => sum + Math.round(Number(p.amount_aed || 0) * 0.05),
+    0
+  )
+
+  // Wallet / credit balance: referral payouts + refunds credited back.
+  const walletBalance = allPayments
+    .filter(
+      (p) =>
+        p.status === 'succeeded' &&
+        ['wallet_credit', 'refund', 'referral_payout'].includes(String(p.type))
+    )
+    .reduce((sum, p) => sum + Number(p.amount_aed || 0), 0)
 
   const kyc = kycSummary(allDocs)
   const displayName =
@@ -375,6 +413,22 @@ export default async function DashboardPage() {
 
             <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
               <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10">
+                  <WalletCards className="h-5 w-5 text-purple-500" />
+                </div>
+                <div>
+                  <p className="text-xs text-[var(--muted-foreground)]">
+                    Wallet Balance
+                  </p>
+                  <p className="text-2xl font-bold">
+                    {formatAED(walletBalance)}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+              <div className="flex items-center gap-3">
                 <div
                   className={`flex h-10 w-10 items-center justify-center rounded-xl ${
                     kyc.status === 'approved'
@@ -402,7 +456,32 @@ export default async function DashboardPage() {
             </div>
           </div>
 
-          {nextDue && (
+          {overduePayments.length > 0 && (
+            <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-red-500/30 bg-red-500/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />
+                <div>
+                  <p className="font-semibold text-red-600 dark:text-red-400">
+                    {overduePayments.length} overdue payment{overduePayments.length > 1 ? 's' : ''} · {formatAED(latePenalty)} late penalty (5%)
+                  </p>
+                  <p className="mt-0.5 text-sm text-[var(--muted-foreground)]">
+                    Pay now to avoid service interruption. Penalty accrues at 5% of each overdue amount.
+                  </p>
+                </div>
+              </div>
+              {overduePayments[0].booking_id && (
+                <Link
+                  href={`/payments?booking=${overduePayments[0].booking_id}`}
+                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+                >
+                  Pay overdue
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              )}
+            </div>
+          )}
+
+          {nextDue && overduePayments.length === 0 && (
             <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-yellow-500/30 bg-yellow-500/5 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-start gap-3">
                 <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-yellow-600 dark:text-yellow-400" />
@@ -639,6 +718,51 @@ export default async function DashboardPage() {
                   </div>
                 </section>
               )}
+
+              <section>
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-lg font-bold">Trip & Mileage History</h2>
+                  <Link
+                    href="/condition-report"
+                    className="text-sm font-medium text-[var(--accent)] hover:underline"
+                  >
+                    Reports
+                  </Link>
+                </div>
+                {tripsByBooking.size === 0 ? (
+                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 text-sm text-[var(--muted-foreground)]">
+                    No mileage logs yet. Odometer readings from pickup and return condition reports appear here.
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {Array.from(tripsByBooking.entries()).slice(0, 5).map(([bookingId, t]) => {
+                      const driven = t.pickup != null && t.ret != null ? t.ret - t.pickup : null
+                      return (
+                        <div
+                          key={bookingId}
+                          className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3"
+                        >
+                          <div className="min-w-0">
+                            <p className="flex items-center gap-1.5 text-sm font-medium">
+                              <Gauge className="h-3.5 w-3.5 text-[var(--accent)]" />
+                              {driven != null && driven >= 0
+                                ? `${driven.toLocaleString()} km driven`
+                                : 'Mileage logged'}
+                            </p>
+                            <p className="mt-0.5 text-xs text-[var(--muted-foreground)]">
+                              {t.pickup != null ? `Out ${t.pickup.toLocaleString()} km` : 'Out —'}
+                              {' · '}
+                              {t.ret != null ? `In ${t.ret.toLocaleString()} km` : 'In —'}
+                              {' · '}
+                              {formatDate(t.date)}
+                            </p>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </section>
             </div>
 
             <div className="space-y-8">
@@ -710,7 +834,10 @@ export default async function DashboardPage() {
                                 : ''}
                             </p>
                           </div>
-                          {paymentStatusBadge(p.status)}
+                          <div className="flex shrink-0 items-center gap-2">
+                            {p.status === 'succeeded' && <InvoiceButton paymentId={p.id} />}
+                            {paymentStatusBadge(p.status)}
+                          </div>
                         </div>
                       ))}
                   </div>

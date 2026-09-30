@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { ChevronLeft, AlertTriangle, Car, DollarSign } from 'lucide-react'
+import { ChevronLeft, AlertTriangle, DollarSign } from 'lucide-react'
 import DamageReportForm from '../DamageReportForm'
 
 type Props = {
@@ -126,7 +126,7 @@ export default async function DamageReportPage({ params }: Props) {
 
               {r.damage_report_photos?.length > 0 && (
                 <div className="mt-3 grid grid-cols-4 gap-2">
-                  {r.damage_report_photos.map((photo: any) => {
+                  {r.damage_report_photos.map((photo: { id: string; storage_path: string }) => {
                     const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/damage-reports/${photo.storage_path}`
                     return (
                       <a

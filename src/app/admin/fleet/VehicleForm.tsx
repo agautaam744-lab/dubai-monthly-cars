@@ -73,7 +73,7 @@ export default function VehicleForm({ initialData, mode }: Props) {
     }
   )
 
-  const update = (field: keyof VehicleData, value: any) => {
+  const update = (field: keyof VehicleData, value: VehicleData[keyof VehicleData]) => {
     setForm((prev) => ({ ...prev, [field]: value }))
     setError('')
   }
@@ -447,7 +447,7 @@ export default function VehicleForm({ initialData, mode }: Props) {
 
           <p className="mt-3 text-xs text-[var(--muted-foreground)]">
             First photo will be the primary image. Photos will be uploaded
-            automatically when you click "Create Vehicle".
+            automatically when you click &quot;Create Vehicle&quot;.
           </p>
         </div>
       )}

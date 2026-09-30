@@ -1,5 +1,7 @@
 ﻿import { requireAdmin } from '@/lib/admin'
 import { Megaphone, Users, Gift, TrendingUp } from 'lucide-react'
+import BroadcastForm from './BroadcastForm'
+import type { NotificationRow } from '@/types/database'
 
 export default async function AdminMarketingPage() {
   const { supabase } = await requireAdmin()
@@ -14,7 +16,7 @@ export default async function AdminMarketingPage() {
     console.log('Marketing data fetch note:', error.message)
   }
 
-  const allCampaigns = campaigns ?? []
+  const allCampaigns = (campaigns ?? []) as NotificationRow[]
 
   // Real subscriber count: all registered customers
   const { count: totalSubscribers } = await supabase
@@ -52,6 +54,29 @@ export default async function AdminMarketingPage() {
         <p className="mt-2 text-sm text-[var(--muted-foreground)]">
           Manage push campaigns, customer segments, and loyalty offers.
         </p>
+      </div>
+
+      <BroadcastForm />
+
+      <div className="mb-8 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
+        <div className="flex items-center gap-2">
+          <Gift className="h-5 w-5 text-[var(--accent)]" />
+          <h2 className="font-semibold">Loyalty & Referral Settings</h2>
+        </div>
+        <div className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
+          <div className="rounded-xl bg-[var(--muted)]/50 p-4">
+            <p className="font-semibold">Referral payout</p>
+            <p className="mt-1 text-[var(--muted-foreground)]">AED 200 wallet credit each side after first paid rental.</p>
+          </div>
+          <div className="rounded-xl bg-[var(--muted)]/50 p-4">
+            <p className="font-semibold">Renewal discounts</p>
+            <p className="mt-1 text-[var(--muted-foreground)]">3 mo −5% · 6 mo −10% · 12 mo −15%, applied automatically.</p>
+          </div>
+          <div className="rounded-xl bg-[var(--muted)]/50 p-4">
+            <p className="font-semibold">Segments</p>
+            <p className="mt-1 text-[var(--muted-foreground)]">{stats.totalSubscribers.toLocaleString()} customers · engagement {stats.avgOpenRate}.</p>
+          </div>
+        </div>
       </div>
 
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
@@ -96,9 +121,6 @@ export default async function AdminMarketingPage() {
             <Gift className="h-5 w-5 text-[var(--accent)]" />
             <h2 className="text-lg font-bold">Recent Campaigns & Notifications</h2>
           </div>
-          <button className="flex items-center gap-1 text-sm font-semibold text-[var(--accent)] hover:underline">
-            Create New Campaign →
-          </button>
         </div>
         
         {allCampaigns.length === 0 ? (
@@ -111,13 +133,13 @@ export default async function AdminMarketingPage() {
           </div>
         ) : (
           <div className="divide-y divide-[var(--border)]">
-            {allCampaigns.map((item: any) => (
+            {allCampaigns.map((item) => (
               <div key={item.id} className="flex items-center justify-between p-4 transition hover:bg-[var(--muted)]/50">
                 <div>
                   <p className="font-semibold">{item.title || 'General Notification'}</p>
                   <p className="text-sm text-[var(--muted-foreground)] line-clamp-1">{item.body || 'No details provided'}</p>
                   <p className="mt-1 text-xs text-[var(--muted-foreground)]">
-                    Type: {item.type || 'general'} · Sent: {new Date(item.created_at).toLocaleDateString('en-AE')}
+                    Type: {item.type || 'general'} · Sent: {item.created_at ? new Date(item.created_at).toLocaleDateString('en-AE') : '—'}
                   </p>
                 </div>
                 <div className="text-right">
