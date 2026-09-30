@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/shared/ThemeProvider'
@@ -16,12 +16,15 @@ export const metadata: Metadata = {
   description:
     'Flexible monthly car rental in Dubai. Choose from Basic, Plus or Premium plans with home delivery.',
   manifest: '/manifest.json',
-  themeColor: '#D4AF37',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
     title: 'DMC Cars',
   },
+}
+
+export const viewport: Viewport = {
+  themeColor: '#D4AF37',
 }
 
 export default function RootLayout({
