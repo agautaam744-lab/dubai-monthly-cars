@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -14,6 +14,8 @@ import {
   TrendingUp,
   Wrench,
   Briefcase,
+  AlertTriangle,
+  Megaphone,
 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
@@ -24,6 +26,8 @@ const links = [
   { href: '/admin/fleet', label: 'Fleet', icon: Car },
   { href: '/admin/maintenance', label: 'Maintenance', icon: Wrench },
   { href: '/admin/corporate', label: 'Corporate', icon: Briefcase },
+  { href: '/admin/damage', label: 'Damage', icon: AlertTriangle },
+  { href: '/admin/marketing', label: 'Marketing', icon: Megaphone },
   { href: '/admin/finance', label: 'Finance', icon: DollarSign },
   { href: '/admin/analytics', label: 'Analytics', icon: TrendingUp },
   { href: '/admin/staff', label: 'Staff', icon: Users },
