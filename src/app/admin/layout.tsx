@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import { LayoutDashboard, LogOut } from 'lucide-react'
 import AdminSidebar from './AdminSidebar'
 import { requireAdmin } from '@/lib/admin'
@@ -55,7 +55,12 @@ export default async function AdminLayout({
             { href: '/admin/kyc', label: 'KYC' },
             { href: '/admin/bookings', label: 'Bookings' },
             { href: '/admin/fleet', label: 'Fleet' },
+            { href: '/admin/maintenance', label: 'Maintenance' },
+            { href: '/admin/corporate', label: 'Corporate' },
+            { href: '/admin/damage', label: 'Damage' },
+            { href: '/admin/marketing', label: 'Marketing' },
             { href: '/admin/finance', label: 'Finance' },
+            { href: '/admin/analytics', label: 'Analytics' },
             { href: '/admin/staff', label: 'Staff' },
             { href: '/admin/reports', label: 'Reports' },
           ].map((item) => (

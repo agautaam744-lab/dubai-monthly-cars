@@ -1,4 +1,4 @@
-'use server'
+﻿'use server'
 
 import { requireAdmin } from '@/lib/admin'
 import { revalidatePath } from 'next/cache'
@@ -20,9 +20,10 @@ export async function createPromoCode(
 
   const { error } = await supabase.from('promo_codes').insert({
     code,
-    discount_percent,
+    discount_type: 'percentage',
+    discount_value: discount_percent,
     max_uses,
-    expires_at,
+    valid_until: expires_at,
     is_active: true,
   })
 

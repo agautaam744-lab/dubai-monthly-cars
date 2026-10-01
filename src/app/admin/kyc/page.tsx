@@ -7,7 +7,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { approveDocument, rejectDocument } from './actions'
+import { approveDocument, rejectDocument, toggleBlacklist } from './actions'
 
 function labelForType(type: string) {
   switch (type) {
@@ -94,10 +94,7 @@ export default async function AdminKycPage() {
       rejection_reason,
       reviewed_at,
       created_at,
-      profiles:user_id (
-        full_name,
-        email
-      )
+      profiles:user_id ( full_name, email, is_blacklisted )
     `)
     .order('created_at', { ascending: false })
 
@@ -212,6 +209,24 @@ export default async function AdminKycPage() {
                       View document
                     </Link>
                   )}
+
+                  <form
+                    action={async () => {
+                      'use server'
+                      await toggleBlacklist(document.user_id, !customer?.is_blacklisted)
+                    }}
+                  >
+                    <button
+                      type="submit"
+                      className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                        customer?.is_blacklisted
+                          ? 'border-red-500 bg-red-500/10 text-red-600 hover:bg-red-500/20'
+                          : 'border-[var(--border)] hover:border-red-400 hover:text-red-500'
+                      }`}
+                    >
+                      {customer?.is_blacklisted ? 'Remove Blacklist' : 'Blacklist Customer'}
+                    </button>
+                  </form>
 
                   {document.status === 'pending' && (
                     <>

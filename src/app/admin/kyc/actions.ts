@@ -1,4 +1,4 @@
-'use server'
+﻿'use server'
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
@@ -98,5 +98,32 @@ export async function rejectDocument(documentId: string, reason: string) {
 
   revalidatePath('/admin/kyc')
   revalidatePath('/kyc')
+  return { ok: true }
+}
+
+export async function toggleBlacklist(userId: string, blacklist: boolean) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'Not logged in' }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  const adminRoles = ['super_admin', 'support', 'fleet_manager']
+  if (!profile || !adminRoles.includes(profile.role)) {
+    return { ok: false, error: 'Access denied' }
+  }
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ is_blacklisted: blacklist })
+    .eq('id', userId)
+
+  if (error) return { ok: false, error: error.message }
+
+  revalidatePath('/admin/kyc')
   return { ok: true }
 }

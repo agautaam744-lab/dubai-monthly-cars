@@ -110,7 +110,7 @@ export default async function AdminFinancePage() {
 
   const { data: promos } = await supabase
     .from('promo_codes')
-    .select('id, code, discount_percent, max_uses, is_active, expires_at')
+    .select('id, code, discount_type, discount_value, max_uses, is_active, valid_until')
     .order('created_at', { ascending: false })
   const promosMissing = promos == null
 

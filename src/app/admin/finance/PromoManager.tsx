@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useActionState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
@@ -11,7 +11,7 @@ export default function PromoManager({
   promos,
   missingTable,
 }: {
-  promos: Array<{ id: string; code: string; discount_percent: number; max_uses: number | null; is_active: boolean; expires_at: string | null }>
+  promos: Array<{ id: string; code: string; discount_value: number; max_uses: number | null; is_active: boolean; valid_until: string | null }>
   missingTable: boolean
 }) {
   const router = useRouter()
@@ -22,7 +22,7 @@ export default function PromoManager({
     return (
       <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--card)] p-5 text-sm text-[var(--muted-foreground)]">
         <p className="font-semibold text-[var(--foreground)]">Promo codes unavailable</p>
-        <p className="mt-1">The <code>promo_codes</code> table is not provisioned yet. Create it (columns: code, discount_percent, max_uses, expires_at, is_active) to enable promo management.</p>
+        <p className="mt-1">The <code>promo_codes</code> table is not provisioned yet. Create it (columns: code, discount_type, discount_value, max_uses, valid_until, is_active) to enable promo management.</p>
       </div>
     )
   }
@@ -49,7 +49,7 @@ export default function PromoManager({
         {promos.map((p) => (
           <div key={p.id} className="flex items-center justify-between gap-2 rounded-xl bg-[var(--muted)]/50 px-3 py-2 text-sm">
             <span className="font-mono font-bold">{p.code}</span>
-            <span className="text-[var(--muted-foreground)]">{p.discount_percent}% off{p.max_uses ? ` · max ${p.max_uses}` : ''}{p.expires_at ? ` · till ${p.expires_at}` : ''}</span>
+            <span className="text-[var(--muted-foreground)]">{p.discount_value}% off{p.max_uses ? ` · max ${p.max_uses}` : ''}{p.valid_until ? ` · till ${p.valid_until}` : ''}</span>
             <button
               type="button"
               disabled={toggling}
