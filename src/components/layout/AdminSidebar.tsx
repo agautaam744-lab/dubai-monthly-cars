@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   Megaphone,
   CalendarClock,
+  Users2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
@@ -31,6 +32,7 @@ const links = [
   { href: '/admin/marketing', label: 'Marketing', icon: Megaphone },
   { href: '/admin/finance', label: 'Finance', icon: DollarSign },
   { href: '/admin/analytics', label: 'Analytics', icon: TrendingUp },
+  { href: '/admin/customers', label: 'Customers', icon: Users2 },
   { href: '/admin/staff', label: 'Staff', icon: Users },
   { href: '/admin/reports', label: 'Reports', icon: BarChart3 },
 ]
