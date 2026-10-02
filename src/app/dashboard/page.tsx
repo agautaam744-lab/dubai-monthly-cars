@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   ArrowRight,
   Bell,
+  Sparkles,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import Navbar from '@/components/layout/Navbar'
@@ -254,7 +255,6 @@ export default async function DashboardPage() {
   const allDocs = documents ?? []
   const allTripReports = tripReports ?? []
 
-  // Trip & mileage segments: pair pickup/return reports per booking.
   const tripsByBooking = new Map<string, { pickup?: number; ret?: number; date: string }>()
   for (const r of allTripReports) {
     const entry = tripsByBooking.get(r.booking_id) ?? { date: String(r.created_at) }
@@ -294,7 +294,6 @@ export default async function DashboardPage() {
     0
   )
 
-  // Late-payment handling: 5% penalty on pending payments past due date.
   const todayStr = new Date().toISOString().slice(0, 10)
   const overduePayments = pendingPayments.filter(
     (p) => p.due_date && String(p.due_date).slice(0, 10) < todayStr
@@ -304,7 +303,6 @@ export default async function DashboardPage() {
     0
   )
 
-  // Wallet / credit balance: referral payouts + refunds credited back.
   const walletBalance = allPayments
     .filter(
       (p) =>
@@ -325,17 +323,25 @@ export default async function DashboardPage() {
       <Navbar />
 
       <main className="flex-1">
-        <section className="border-b border-[var(--border)] bg-[var(--muted)]">
-          <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        {/* CINEMATIC HEADER */}
+        <section className="relative overflow-hidden border-b border-[var(--border)]">
+          <div className="absolute inset-0 bg-gradient-to-b from-[var(--muted)] to-[var(--background)]" />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_70%_at_50%_0%,rgba(201,162,39,0.14),transparent)]"
+          />
+
+          <div className="relative mx-auto max-w-7xl px-4 pb-10 pt-14 sm:px-6 sm:pb-12 sm:pt-16 lg:px-8 lg:pb-14 lg:pt-20">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+                <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
+                  <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
                   Customer Dashboard
                 </p>
-                <h1 className="mt-2 text-2xl font-bold sm:text-3xl">
+                <h1 className="mt-3 font-serif text-3xl tracking-tight sm:text-4xl lg:text-5xl">
                   Welcome back, {displayName}
                 </h1>
-                <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+                <p className="mt-3 max-w-xl text-sm leading-6 text-[var(--foreground)]/70 sm:text-base">
                   Manage your rentals, payments, and documents in one place.
                 </p>
               </div>
@@ -343,19 +349,19 @@ export default async function DashboardPage() {
               <div className="flex flex-wrap gap-2">
                 <Link
                   href="/cars"
-                  className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+                  className="inline-flex min-h-[46px] items-center gap-2 rounded-xl bg-[var(--accent)] px-5 text-sm font-semibold text-white shadow-lg shadow-[var(--accent)]/20 transition-all hover:-translate-y-0.5 hover:bg-[var(--accent-hover)] hover:shadow-xl"
                 >
-                  <CarFront className="h-4 w-4" />
+                  <CarFront className="h-4 w-4" aria-hidden="true" />
                   Browse Cars
                 </Link>
                 <Link
                   href="/notifications"
-                  className="relative inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-2.5 text-sm font-medium transition hover:bg-[var(--muted)]"
+                  className="relative inline-flex min-h-[46px] items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-5 text-sm font-medium transition-all hover:-translate-y-0.5 hover:border-[var(--accent)]/50 hover:shadow-md"
                 >
-                  <Bell className="h-4 w-4" />
+                  <Bell className="h-4 w-4" aria-hidden="true" />
                   Notifications
                   {(unreadNotifications ?? 0) > 0 && (
-                    <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                    <span className="absolute -end-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
                       {unreadNotifications}
                     </span>
                   )}
@@ -365,106 +371,119 @@ export default async function DashboardPage() {
           </div>
         </section>
 
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+          {/* KPI CARDS */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+            <div className="group rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition-all hover:-translate-y-0.5 hover:border-[var(--accent)]/40 hover:shadow-md">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/10">
-                  <CarFront className="h-5 w-5 text-green-500" />
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10">
+                  <CarFront className="h-5 w-5 text-emerald-500" aria-hidden="true" />
                 </div>
                 <div>
-                  <p className="text-xs text-[var(--muted-foreground)]">
-                    Active Rentals
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+                    Active rentals
                   </p>
-                  <p className="text-2xl font-bold">{activeBookings.length}</p>
+                  <p className="mt-0.5 font-serif text-3xl tracking-tight tabular-nums">
+                    {activeBookings.length}
+                  </p>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+            <div className="group rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition-all hover:-translate-y-0.5 hover:border-[var(--accent)]/40 hover:shadow-md">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-yellow-500/10">
-                  <Clock className="h-5 w-5 text-yellow-500" />
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-500/10">
+                  <Clock className="h-5 w-5 text-amber-500" aria-hidden="true" />
                 </div>
                 <div>
-                  <p className="text-xs text-[var(--muted-foreground)]">
-                    Pending Actions
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+                    Pending actions
                   </p>
-                  <p className="text-2xl font-bold">{pendingBookings.length}</p>
+                  <p className="mt-0.5 font-serif text-3xl tracking-tight tabular-nums">
+                    {pendingBookings.length}
+                  </p>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+            <div className="group rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition-all hover:-translate-y-0.5 hover:border-[var(--accent)]/40 hover:shadow-md">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10">
-                  <CreditCard className="h-5 w-5 text-blue-500" />
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-500/10">
+                  <CreditCard className="h-5 w-5 text-sky-500" aria-hidden="true" />
                 </div>
                 <div>
-                  <p className="text-xs text-[var(--muted-foreground)]">
-                    Amount Due
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+                    Amount due
                   </p>
-                  <p className="text-2xl font-bold">
+                  <p className="mt-0.5 font-serif text-2xl tracking-tight tabular-nums">
                     {formatAED(totalPending)}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+            <div className="group rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition-all hover:-translate-y-0.5 hover:border-[var(--accent)]/40 hover:shadow-md">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10">
-                  <WalletCards className="h-5 w-5 text-purple-500" />
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-500/10">
+                  <WalletCards className="h-5 w-5 text-purple-500" aria-hidden="true" />
                 </div>
                 <div>
-                  <p className="text-xs text-[var(--muted-foreground)]">
-                    Wallet Balance
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+                    Wallet
                   </p>
-                  <p className="text-2xl font-bold">
+                  <p className="mt-0.5 font-serif text-2xl tracking-tight tabular-nums">
                     {formatAED(walletBalance)}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+            <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:col-span-2 lg:col-span-4">
               <div className="flex items-center gap-3">
                 <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                  className={`flex h-11 w-11 items-center justify-center rounded-xl ${
                     kyc.status === 'approved'
-                      ? 'bg-green-500/10'
+                      ? 'bg-emerald-500/10'
                       : kyc.status === 'rejected'
                         ? 'bg-red-500/10'
-                        : 'bg-yellow-500/10'
+                        : 'bg-amber-500/10'
                   }`}
                 >
                   {kyc.status === 'approved' ? (
-                    <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    <CheckCircle2 className="h-5 w-5 text-emerald-500" aria-hidden="true" />
                   ) : kyc.status === 'rejected' ? (
-                    <XCircle className="h-5 w-5 text-red-500" />
+                    <XCircle className="h-5 w-5 text-red-500" aria-hidden="true" />
                   ) : (
-                    <ShieldCheck className="h-5 w-5 text-yellow-500" />
+                    <ShieldCheck className="h-5 w-5 text-amber-500" aria-hidden="true" />
                   )}
                 </div>
-                <div>
-                  <p className="text-xs text-[var(--muted-foreground)]">
-                    Verification
+                <div className="flex-1">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[var(--muted-foreground)]">
+                    Verification status
                   </p>
-                  <p className="text-sm font-bold leading-tight">{kyc.label}</p>
+                  <p className="mt-0.5 font-semibold">{kyc.label}</p>
                 </div>
+                <Link
+                  href="/kyc"
+                  className="hidden min-h-[44px] items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-medium transition hover:border-[var(--accent)]/50 hover:text-[var(--accent)] sm:inline-flex"
+                >
+                  Manage
+                  <ChevronRight className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />
+                </Link>
               </div>
             </div>
           </div>
 
+          {/* ALERTS */}
           {overduePayments.length > 0 && (
-            <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-red-500/30 bg-red-500/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-6 flex flex-col gap-4 overflow-hidden rounded-2xl border border-red-500/30 bg-gradient-to-br from-red-500/5 to-transparent p-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-start gap-3">
-                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" />
+                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-red-500" aria-hidden="true" />
                 <div>
                   <p className="font-semibold text-red-600 dark:text-red-400">
                     {overduePayments.length} overdue payment{overduePayments.length > 1 ? 's' : ''} · {formatAED(latePenalty)} late penalty (5%)
                   </p>
-                  <p className="mt-0.5 text-sm text-[var(--muted-foreground)]">
+                  <p className="mt-1 text-sm text-[var(--foreground)]/70">
                     Pay now to avoid service interruption. Penalty accrues at 5% of each overdue amount.
                   </p>
                 </div>
@@ -472,24 +491,24 @@ export default async function DashboardPage() {
               {overduePayments[0].booking_id && (
                 <Link
                   href={`/payments?booking=${overduePayments[0].booking_id}`}
-                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+                  className="inline-flex min-h-[46px] shrink-0 items-center justify-center gap-2 rounded-xl bg-red-500 px-5 text-sm font-semibold text-white shadow-lg shadow-red-500/20 transition-all hover:-translate-y-0.5 hover:opacity-90"
                 >
                   Pay overdue
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />
                 </Link>
               )}
             </div>
           )}
 
           {nextDue && overduePayments.length === 0 && (
-            <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-yellow-500/30 bg-yellow-500/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-6 flex flex-col gap-4 overflow-hidden rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-transparent p-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-start gap-3">
-                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-yellow-600 dark:text-yellow-400" />
+                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden="true" />
                 <div>
-                  <p className="font-semibold text-yellow-800 dark:text-yellow-200">
+                  <p className="font-semibold text-amber-800 dark:text-amber-200">
                     Payment due {formatDate(nextDue.due_date)}
                   </p>
-                  <p className="mt-0.5 text-sm text-[var(--muted-foreground)]">
+                  <p className="mt-1 text-sm text-[var(--foreground)]/70">
                     {formatAED(Number(nextDue.amount_aed))} ·{' '}
                     {(nextDue.type || 'payment').replace(/_/g, ' ')}
                   </p>
@@ -498,41 +517,45 @@ export default async function DashboardPage() {
               {nextDue.booking_id && (
                 <Link
                   href={`/payments?booking=${nextDue.booking_id}`}
-                  className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+                  className="inline-flex min-h-[46px] shrink-0 items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-5 text-sm font-semibold text-white shadow-lg shadow-[var(--accent)]/20 transition-all hover:-translate-y-0.5 hover:opacity-90"
                 >
                   Pay now
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />
                 </Link>
               )}
             </div>
           )}
 
-          <div className="mt-8 grid gap-8 lg:grid-cols-3">
-            <div className="space-y-8 lg:col-span-2">
+          <div className="mt-10 grid gap-8 lg:grid-cols-3">
+            <div className="space-y-10 lg:col-span-2">
+              {/* ACTIVE RENTALS */}
               <section>
-                <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-lg font-bold">Active Rentals</h2>
+                <div className="mb-5 flex items-center justify-between">
+                  <h2 className="font-serif text-2xl tracking-tight">Active Rentals</h2>
                   <Link
                     href="/bookings"
-                    className="text-sm font-medium text-[var(--accent)] hover:underline"
+                    className="group inline-flex items-center gap-1 text-sm font-semibold text-[var(--accent)] transition hover:opacity-80"
                   >
                     View all
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" aria-hidden="true" />
                   </Link>
                 </div>
 
                 {activeBookings.length === 0 ? (
-                  <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--card)] p-8 text-center">
-                    <CarFront className="mx-auto h-10 w-10 text-[var(--muted-foreground)]" />
-                    <p className="mt-3 font-medium">No active rentals</p>
+                  <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--card)] p-10 text-center">
+                    <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5">
+                      <CarFront className="h-7 w-7 text-[var(--accent)]" aria-hidden="true" />
+                    </div>
+                    <p className="mt-4 font-semibold">No active rentals</p>
                     <p className="mt-1 text-sm text-[var(--muted-foreground)]">
                       Browse the fleet and start your monthly plan.
                     </p>
                     <Link
                       href="/cars"
-                      className="mt-4 inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+                      className="mt-5 inline-flex min-h-[46px] items-center gap-2 rounded-xl bg-[var(--accent)] px-5 text-sm font-semibold text-white shadow-lg shadow-[var(--accent)]/20 transition-all hover:-translate-y-0.5"
                     >
                       Browse Cars
-                      <ArrowRight className="h-4 w-4" />
+                      <ArrowRight className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />
                     </Link>
                   </div>
                 ) : (
@@ -551,12 +574,12 @@ export default async function DashboardPage() {
                         <Link
                           key={booking.id}
                           href={`/bookings/${booking.id}`}
-                          className="block rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition hover:-translate-y-0.5 hover:shadow-md"
+                          className="group block overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition-all hover:-translate-y-1 hover:border-[var(--accent)]/40 hover:shadow-lg"
                         >
                           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                             <div className="min-w-0 flex-1">
                               <div className="flex flex-wrap items-center gap-2">
-                                <h3 className="truncate text-base font-semibold">
+                                <h3 className="truncate font-serif text-xl tracking-tight">
                                   {vehicle
                                     ? `${vehicle.make} ${vehicle.model}${vehicle.year ? ` (${vehicle.year})` : ''}`
                                     : 'Vehicle'}
@@ -575,7 +598,7 @@ export default async function DashboardPage() {
 
                               <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-[var(--muted-foreground)]">
                                 <span className="inline-flex items-center gap-1.5">
-                                  <CalendarDays className="h-3.5 w-3.5" />
+                                  <CalendarDays className="h-3.5 w-3.5 text-[var(--accent)]" aria-hidden="true" />
                                   {formatDate(booking.start_date)}
                                   {booking.end_date
                                     ? ` → ${formatDate(booking.end_date)}`
@@ -583,14 +606,14 @@ export default async function DashboardPage() {
                                 </span>
                                 {vehicle?.location && (
                                   <span className="inline-flex items-center gap-1.5">
-                                    <MapPin className="h-3.5 w-3.5" />
+                                    <MapPin className="h-3.5 w-3.5 text-[var(--accent)]" aria-hidden="true" />
                                     {vehicle.location}
                                   </span>
                                 )}
                                 {mileageLimit != null && (
                                   <span className="inline-flex items-center gap-1.5">
-                                    <Gauge className="h-3.5 w-3.5" />
-                                    {mileageLimit.toLocaleString()} km/month limit
+                                    <Gauge className="h-3.5 w-3.5 text-[var(--accent)]" aria-hidden="true" />
+                                    {mileageLimit.toLocaleString()} km/month
                                     {currentMileage != null
                                       ? ` · odo ${currentMileage.toLocaleString()} km`
                                       : ''}
@@ -605,13 +628,11 @@ export default async function DashboardPage() {
                             </div>
 
                             <div className="flex shrink-0 items-center gap-3 sm:flex-col sm:items-end">
-                              <p className="text-lg font-bold">
+                              <p className="text-lg font-bold tabular-nums">
                                 {formatAED(Number(booking.monthly_price_aed))}
-                                <span className="text-xs font-normal text-[var(--muted-foreground)]">
-                                  /mo
-                                </span>
+                                <span className="text-xs font-normal text-[var(--muted-foreground)]"> /mo</span>
                               </p>
-                              <ChevronRight className="h-5 w-5 text-[var(--muted-foreground)]" />
+                              <ChevronRight className="h-5 w-5 text-[var(--muted-foreground)] transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" aria-hidden="true" />
                             </div>
                           </div>
                         </Link>
@@ -621,10 +642,11 @@ export default async function DashboardPage() {
                 )}
               </section>
 
+              {/* ACTION REQUIRED */}
               {pendingBookings.length > 0 && (
                 <section>
-                  <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-lg font-bold">Action Required</h2>
+                  <div className="mb-5 flex items-center justify-between">
+                    <h2 className="font-serif text-2xl tracking-tight">Action Required</h2>
                   </div>
                   <div className="space-y-3">
                     {pendingBookings.map((booking) => {
@@ -648,7 +670,7 @@ export default async function DashboardPage() {
                       return (
                         <div
                           key={booking.id}
-                          className="flex flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 sm:flex-row sm:items-center sm:justify-between"
+                          className="flex flex-col gap-3 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 transition-all hover:border-[var(--accent)]/40 hover:shadow-md sm:flex-row sm:items-center sm:justify-between"
                         >
                           <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-2">
@@ -666,10 +688,10 @@ export default async function DashboardPage() {
                           </div>
                           <Link
                             href={ctaHref}
-                            className="inline-flex min-h-[44px] shrink-0 items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+                            className="inline-flex min-h-[46px] shrink-0 items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-5 text-sm font-semibold text-white shadow-lg shadow-[var(--accent)]/20 transition-all hover:-translate-y-0.5 hover:bg-[var(--accent-hover)]"
                           >
                             {ctaLabel}
-                            <ArrowRight className="h-4 w-4" />
+                            <ArrowRight className="h-4 w-4 rtl:rotate-180" aria-hidden="true" />
                           </Link>
                         </div>
                       )
@@ -678,12 +700,13 @@ export default async function DashboardPage() {
                 </section>
               )}
 
+              {/* PAST RENTALS */}
               {pastBookings.length > 0 && (
                 <section>
-                  <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-lg font-bold">Past Rentals</h2>
+                  <div className="mb-5 flex items-center justify-between">
+                    <h2 className="font-serif text-2xl tracking-tight">Past Rentals</h2>
                   </div>
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {pastBookings.slice(0, 5).map((booking) => {
                       const vehicle = Array.isArray(booking.vehicles)
                         ? booking.vehicles[0]
@@ -693,7 +716,7 @@ export default async function DashboardPage() {
                         <Link
                           key={booking.id}
                           href={`/bookings/${booking.id}`}
-                          className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 transition hover:bg-[var(--muted)]"
+                          className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-5 py-3.5 transition hover:border-[var(--accent)]/40 hover:bg-[var(--muted)]/50"
                         >
                           <div className="min-w-0">
                             <p className="truncate font-medium">
@@ -710,7 +733,7 @@ export default async function DashboardPage() {
                           </div>
                           <div className="flex items-center gap-2">
                             {statusBadge(booking.status)}
-                            <ChevronRight className="h-4 w-4 text-[var(--muted-foreground)]" />
+                            <ChevronRight className="h-4 w-4 text-[var(--muted-foreground)] rtl:rotate-180" aria-hidden="true" />
                           </div>
                         </Link>
                       )
@@ -719,18 +742,19 @@ export default async function DashboardPage() {
                 </section>
               )}
 
+              {/* TRIP & MILEAGE */}
               <section>
-                <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-lg font-bold">Trip & Mileage History</h2>
+                <div className="mb-5 flex items-center justify-between">
+                  <h2 className="font-serif text-2xl tracking-tight">Trip &amp; Mileage History</h2>
                   <Link
                     href="/condition-report"
-                    className="text-sm font-medium text-[var(--accent)] hover:underline"
+                    className="text-sm font-semibold text-[var(--accent)] hover:opacity-80"
                   >
                     Reports
                   </Link>
                 </div>
                 {tripsByBooking.size === 0 ? (
-                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 text-sm text-[var(--muted-foreground)]">
+                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 text-sm text-[var(--muted-foreground)]">
                     No mileage logs yet. Odometer readings from pickup and return condition reports appear here.
                   </div>
                 ) : (
@@ -740,16 +764,16 @@ export default async function DashboardPage() {
                       return (
                         <div
                           key={bookingId}
-                          className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3"
+                          className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-5 py-3.5 transition hover:border-[var(--accent)]/40"
                         >
                           <div className="min-w-0">
-                            <p className="flex items-center gap-1.5 text-sm font-medium">
-                              <Gauge className="h-3.5 w-3.5 text-[var(--accent)]" />
+                            <p className="flex items-center gap-1.5 text-sm font-semibold">
+                              <Gauge className="h-3.5 w-3.5 text-[var(--accent)]" aria-hidden="true" />
                               {driven != null && driven >= 0
                                 ? `${driven.toLocaleString()} km driven`
                                 : 'Mileage logged'}
                             </p>
-                            <p className="mt-0.5 text-xs text-[var(--muted-foreground)]">
+                            <p className="mt-1 text-xs text-[var(--muted-foreground)]">
                               {t.pickup != null ? `Out ${t.pickup.toLocaleString()} km` : 'Out —'}
                               {' · '}
                               {t.ret != null ? `In ${t.ret.toLocaleString()} km` : 'In —'}
@@ -765,13 +789,14 @@ export default async function DashboardPage() {
               </section>
             </div>
 
-            <div className="space-y-8">
+            {/* RIGHT COLUMN */}
+            <div className="space-y-10">
               <section>
-                <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-lg font-bold">Upcoming Payments</h2>
+                <div className="mb-5">
+                  <h2 className="font-serif text-2xl tracking-tight">Upcoming Payments</h2>
                 </div>
                 {upcomingDue.length === 0 ? (
-                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 text-sm text-[var(--muted-foreground)]">
+                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 text-sm text-[var(--muted-foreground)]">
                     No upcoming payments.
                   </div>
                 ) : (
@@ -779,10 +804,10 @@ export default async function DashboardPage() {
                     {upcomingDue.map((p) => (
                       <div
                         key={p.id}
-                        className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3"
+                        className="rounded-xl border border-[var(--border)] bg-[var(--card)] px-5 py-3.5 transition hover:border-[var(--accent)]/40"
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <p className="font-semibold">
+                          <p className="font-bold tabular-nums">
                             {formatAED(Number(p.amount_aed))}
                           </p>
                           {paymentStatusBadge(p.status)}
@@ -798,15 +823,15 @@ export default async function DashboardPage() {
               </section>
 
               <section>
-                <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-lg font-bold">Payment History</h2>
+                <div className="mb-5 flex items-center justify-between">
+                  <h2 className="font-serif text-2xl tracking-tight">Payment History</h2>
                   <p className="text-xs text-[var(--muted-foreground)]">
-                    Total paid {formatAED(totalPaid)}
+                    Paid {formatAED(totalPaid)}
                   </p>
                 </div>
                 {succeededPayments.length === 0 &&
                 failedPayments.length === 0 ? (
-                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 text-sm text-[var(--muted-foreground)]">
+                  <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-6 text-sm text-[var(--muted-foreground)]">
                     No payments yet.
                   </div>
                 ) : (
@@ -821,10 +846,10 @@ export default async function DashboardPage() {
                       .map((p) => (
                         <div
                           key={p.id}
-                          className="flex items-center justify-between gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3"
+                          className="flex items-center justify-between gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-5 py-3.5 transition hover:border-[var(--accent)]/40"
                         >
                           <div className="min-w-0">
-                            <p className="font-medium">
+                            <p className="font-semibold tabular-nums">
                               {formatAED(Number(p.amount_aed))}
                             </p>
                             <p className="truncate text-xs text-[var(--muted-foreground)]">
@@ -845,7 +870,7 @@ export default async function DashboardPage() {
               </section>
 
               <section>
-                <h2 className="mb-4 text-lg font-bold">Quick Actions</h2>
+                <h2 className="mb-5 font-serif text-2xl tracking-tight">Quick Actions</h2>
                 <div className="grid gap-2">
                   {[
                     {
@@ -888,16 +913,16 @@ export default async function DashboardPage() {
                     <Link
                       key={item.href}
                       href={item.href}
-                      className="flex min-h-[48px] items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 transition hover:bg-[var(--muted)]"
+                      className="group flex min-h-[56px] items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3.5 transition-all hover:-translate-y-0.5 hover:border-[var(--accent)]/40 hover:shadow-md"
                     >
-                      <item.icon className="h-5 w-5 shrink-0 text-[var(--accent)]" />
+                      <item.icon className="h-5 w-5 shrink-0 text-[var(--accent)]" aria-hidden="true" />
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium">{item.label}</p>
+                        <p className="text-sm font-semibold">{item.label}</p>
                         <p className="text-xs text-[var(--muted-foreground)]">
                           {item.desc}
                         </p>
                       </div>
-                      <ChevronRight className="h-4 w-4 text-[var(--muted-foreground)]" />
+                      <ChevronRight className="h-4 w-4 text-[var(--muted-foreground)] transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" aria-hidden="true" />
                     </Link>
                   ))}
                 </div>
