@@ -3,6 +3,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import Hero from '@/components/Hero'
 import FeaturedCategories from '@/components/FeaturedCategories'
+import PremiumExperience from '@/components/PremiumExperience'
 import { ArrowRight, Shield, Truck, Calendar } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import VehicleCard, { type CarsVehicle } from '@/app/cars/VehicleCard'
@@ -49,6 +50,8 @@ export default async function HomePage() {
         <Hero />
 
         <FeaturedCategories />
+
+        <PremiumExperience />
 
         {/* FEATURED CARS */}
         {vehicles.length > 0 && (
