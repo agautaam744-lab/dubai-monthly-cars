@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { ChevronLeft, Car, Calendar, User, CreditCard, FileText } from 'lucide-react'
 import { requireAdmin } from '@/lib/admin'
 import BookingManager from './BookingManager'
+import RefundForm from '@/app/admin/finance/RefundForm'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -41,6 +42,15 @@ export default async function BookingDetailPage({ params }: Props) {
 
   if (!booking) notFound()
 
+  const { data: originalPayment } = await supabase
+    .from('payments')
+    .select('id, amount_aed')
+    .eq('booking_id', id)
+    .eq('type', 'deposit')
+    .eq('status', 'succeeded')
+    .limit(1)
+    .maybeSingle()
+
   const vehicle = Array.isArray(booking.vehicles) ? booking.vehicles[0] : booking.vehicles
   const tier = Array.isArray(booking.pricing_tiers) ? booking.pricing_tiers[0] : booking.pricing_tiers
   const customer = Array.isArray(booking.profiles) ? booking.profiles[0] : booking.profiles
@@ -49,6 +59,8 @@ export default async function BookingDetailPage({ params }: Props) {
     Number(booking.monthly_price_aed || 0) +
     Number(booking.deposit_aed || 0) +
     Number(booking.total_add_ons_aed || 0)
+
+  const canRefund = ['completed', 'terminated', 'cancelled'].includes(booking.status)
 
   return (
     <div className="p-6 sm:p-8">
@@ -140,7 +152,39 @@ export default async function BookingDetailPage({ params }: Props) {
           )}
         </div>
 
-        <BookingManager bookingId={booking.id} status={booking.status} />
+        {canRefund && (
+          <div className="rounded-2xl border border-[var(--accent)]/30 bg-gradient-to-br from-[var(--accent)]/5 via-transparent to-transparent p-5 sm:p-6 lg:col-span-2">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--accent)]/10">
+                  <CreditCard className="h-6 w-6 text-[var(--accent)]" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--accent)]">
+                    Deposit Refund
+                  </p>
+                  <p className="mt-1 font-serif text-3xl tabular-nums tracking-tight text-[var(--accent)]">
+                    {formatAED(Number(booking.deposit_aed))}
+                  </p>
+                  <p className="mt-0.5 text-xs text-[var(--muted-foreground)]">
+                    Refundable deposit for {vehicle?.make} {vehicle?.model}
+                  </p>
+                </div>
+              </div>
+
+              <RefundForm
+                bookingId={booking.id}
+                originalPaymentId={originalPayment?.id ?? null}
+                depositAmount={Number(booking.deposit_aed)}
+                bookingLabel={(vehicle?.make ?? '') + ' ' + (vehicle?.model ?? '')}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="lg:col-span-2">
+          <BookingManager bookingId={booking.id} status={booking.status} />
+        </div>
       </div>
     </div>
   )
