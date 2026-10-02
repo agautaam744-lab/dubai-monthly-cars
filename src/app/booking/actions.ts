@@ -1,4 +1,4 @@
-'use server'
+﻿'use server'
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
@@ -374,6 +374,15 @@ export async function createBookingFromSelection(
       .single()
 
   if (bookingError || !booking) {
+    // PostgreSQL exclusion constraint is the final concurrency guard.
+    // 23P01 means an exclusion constraint was violated because
+    // another active booking overlaps this vehicle/date range.
+    if (bookingError?.code === '23P01') {
+      throw new Error(
+        'This vehicle is already booked for part of the selected period.',
+      )
+    }
+
     throw new Error(
       bookingError?.message ?? 'Booking could not be created.',
     )
