@@ -1,6 +1,7 @@
 ﻿'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { useTheme } from 'next-themes'
 import {
@@ -25,20 +26,27 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [languageOpen, setLanguageOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
-
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
+
+  const pathname = usePathname()
+  const isHome = pathname === '/'
+  const isTransparent = isHome && !isScrolled && !isOpen
 
   const { lang, setLang, t } = useLanguage()
-
   const languageRef = useRef<HTMLDivElement>(null)
-
   const { theme, setTheme } = useTheme()
+
+  useEffect(() => {
+    const onScroll = () => setIsScrolled(window.scrollY > 20)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   useEffect(() => {
     let cancelled = false
     const supabase = createClient()
-    // State is set inside async/subscription callbacks (external-system sync),
-    // which also flips `mounted` once the first auth result arrives.
     supabase.auth.getUser().then(({ data }) => {
       if (cancelled) return
       setIsLoggedIn(!!data.user)
@@ -64,9 +72,7 @@ export default function Navbar() {
         setLanguageOpen(false)
       }
     }
-
     document.addEventListener('mousedown', handleOutsideClick)
-
     return () => {
       document.removeEventListener('mousedown', handleOutsideClick)
     }
@@ -92,13 +98,22 @@ export default function Navbar() {
     { href: '/support', label: t('navbar.support') },
   ]
 
+  const textColor = isTransparent ? 'text-white' : 'text-[var(--foreground)]'
+  const textMuted = isTransparent
+    ? 'text-white/75 hover:text-white'
+    : 'text-[var(--foreground)]/75 hover:text-[var(--foreground)]'
+  const hoverBg = isTransparent
+    ? 'hover:bg-white/10'
+    : 'hover:bg-[var(--muted)]'
+
   return (
     <header
       className={cn(
-        'sticky top-0 z-50 w-full',
-        'border-b border-[var(--border)]',
-        'bg-[var(--background)]/95 backdrop-blur-xl',
-        'supports-[backdrop-filter]:bg-[var(--background)]/80'
+        'fixed top-0 left-0 right-0 z-50 w-full',
+        'transition-all duration-300',
+        isTransparent
+          ? 'border-b border-transparent bg-transparent'
+          : 'border-b border-[var(--border)] bg-[var(--background)]/95 backdrop-blur-xl supports-[backdrop-filter]:bg-[var(--background)]/80'
       )}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
@@ -106,23 +121,18 @@ export default function Navbar() {
         <Link
           href="/"
           onClick={() => setIsOpen(false)}
-          className="flex min-h-[44px] shrink-0 items-center gap-2 font-semibold tracking-tight"
+          className={cn(
+            'flex min-h-[44px] shrink-0 items-center gap-2 font-semibold tracking-tight',
+            textColor
+          )}
         >
-          <Car
-            className="h-6 w-6 shrink-0 text-[var(--accent)]"
-            aria-hidden="true"
-          />
-          <span className="hidden whitespace-nowrap xl:inline">
-            Dubai Monthly Cars
-          </span>
+          <Car className="h-6 w-6 shrink-0 text-[var(--accent)]" aria-hidden="true" />
+          <span className="hidden whitespace-nowrap xl:inline">Dubai Monthly Cars</span>
           <span className="whitespace-nowrap xl:hidden">DMC</span>
         </Link>
 
-        {/* DESKTOP NAVIGATION */}
-        <nav
-          className="hidden items-center gap-5 lg:flex xl:gap-6"
-          aria-label="Main navigation"
-        >
+        {/* DESKTOP NAV */}
+        <nav className="hidden items-center gap-5 lg:flex xl:gap-6" aria-label="Main navigation">
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -130,9 +140,8 @@ export default function Navbar() {
               className={cn(
                 'flex min-h-[44px] items-center whitespace-nowrap',
                 'text-sm font-medium',
-                'text-[var(--foreground)]/75',
                 'transition-colors',
-                'hover:text-[var(--foreground)]'
+                textMuted
               )}
             >
               {link.label}
@@ -142,46 +151,27 @@ export default function Navbar() {
 
         {/* RIGHT ACTIONS */}
         <div className="flex shrink-0 items-center gap-2">
-          {/* LANGUAGE DROPDOWN (DESKTOP) */}
+          {/* LANGUAGE */}
           <div ref={languageRef} className="relative hidden xl:block">
             <button
               type="button"
-              onClick={() =>
-                setLanguageOpen((current) => !current)
-              }
+              onClick={() => setLanguageOpen((c) => !c)}
               className={cn(
-                'flex min-h-[44px] items-center gap-2',
-                'rounded-lg px-3',
-                'text-sm font-medium',
-                'text-[var(--foreground)]/85',
-                'transition-colors',
-                'hover:bg-[var(--muted)]'
+                'flex min-h-[44px] items-center gap-2 rounded-lg px-3',
+                'text-sm font-medium transition-colors',
+                isTransparent ? 'text-white/85 hover:bg-white/10' : 'text-[var(--foreground)]/85 hover:bg-[var(--muted)]'
               )}
               aria-haspopup="menu"
               aria-expanded={languageOpen}
             >
               <Globe2 className="h-4 w-4" aria-hidden="true" />
-              <span className="whitespace-nowrap">
-                {lang === 'en' ? 'EN' : 'AR'}
-              </span>
-              <ChevronDown
-                className={cn(
-                  'h-4 w-4 transition-transform',
-                  languageOpen && 'rotate-180'
-                )}
-                aria-hidden="true"
-              />
+              <span className="whitespace-nowrap">{lang === 'en' ? 'EN' : 'AR'}</span>
+              <ChevronDown className={cn('h-4 w-4 transition-transform', languageOpen && 'rotate-180')} aria-hidden="true" />
             </button>
 
             {languageOpen && (
               <div
-                className={cn(
-                  'absolute right-0 top-full mt-2 w-48',
-                  'overflow-hidden rounded-xl',
-                  'border border-[var(--border)]',
-                  'bg-[var(--card)]',
-                  'shadow-xl'
-                )}
+                className="absolute right-0 top-full mt-2 w-48 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-xl"
                 role="menu"
               >
                 <div className="p-1.5">
@@ -189,76 +179,47 @@ export default function Navbar() {
                     type="button"
                     onClick={() => changeLanguage('en')}
                     className={cn(
-                      'flex min-h-[44px] w-full',
-                      'items-center justify-between',
-                      'rounded-lg px-3',
-                      'text-sm',
-                      'transition-colors',
-                      'hover:bg-[var(--muted)]',
+                      'flex min-h-[44px] w-full items-center justify-between rounded-lg px-3 text-sm transition-colors hover:bg-[var(--muted)]',
                       lang === 'en' && 'bg-[var(--muted)]'
                     )}
                     role="menuitem"
                   >
                     <span className="flex items-center gap-3">
-                      <span className="text-base">🇬🇧</span>
-                      English
+                      <span className="text-base">🇬🇧</span> English
                     </span>
-                    {lang === 'en' && (
-                      <Check
-                        className="h-4 w-4 text-[var(--accent)]"
-                        aria-hidden="true"
-                      />
-                    )}
+                    {lang === 'en' && <Check className="h-4 w-4 text-[var(--accent)]" />}
                   </button>
-
                   <button
                     type="button"
                     onClick={() => changeLanguage('ar')}
                     className={cn(
-                      'flex min-h-[44px] w-full',
-                      'items-center justify-between',
-                      'rounded-lg px-3',
-                      'text-sm',
-                      'transition-colors',
-                      'hover:bg-[var(--muted)]',
+                      'flex min-h-[44px] w-full items-center justify-between rounded-lg px-3 text-sm transition-colors hover:bg-[var(--muted)]',
                       lang === 'ar' && 'bg-[var(--muted)]'
                     )}
                     role="menuitem"
                   >
                     <span className="flex items-center gap-3">
-                      <span className="text-base">🇦🇪</span>
-                      العربية
+                      <span className="text-base">🇦🇪</span> العربية
                     </span>
-                    {lang === 'ar' && (
-                      <Check
-                        className="h-4 w-4 text-[var(--accent)]"
-                        aria-hidden="true"
-                      />
-                    )}
+                    {lang === 'ar' && <Check className="h-4 w-4 text-[var(--accent)]" />}
                   </button>
                 </div>
               </div>
             )}
           </div>
 
-          {/* NOTIFICATION BELL (DESKTOP) */}
           {isLoggedIn && (
             <div className="hidden sm:block">
               <NotificationBell />
             </div>
           )}
 
-          {/* PROFILE LINK (DESKTOP) */}
           {isLoggedIn && (
             <Link
               href="/profile"
               className={cn(
-                'hidden sm:flex min-h-[44px] min-w-[44px]',
-                'items-center justify-center',
-                'rounded-lg',
-                'text-[var(--foreground)]',
-                'transition-colors',
-                'hover:bg-[var(--muted)]'
+                'hidden sm:flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg transition-colors',
+                isTransparent ? 'text-white hover:bg-white/10' : 'text-[var(--foreground)] hover:bg-[var(--muted)]'
               )}
               aria-label="Profile"
             >
@@ -266,48 +227,30 @@ export default function Navbar() {
             </Link>
           )}
 
-          {/* THEME TOGGLE (DESKTOP) */}
           <button
             type="button"
             onClick={toggleTheme}
             className={cn(
-              'hidden sm:flex min-h-[44px] min-w-[44px]',
-              'items-center justify-center',
-              'rounded-lg',
-              'text-[var(--foreground)]',
-              'transition-colors',
-              'hover:bg-[var(--muted)]'
+              'hidden sm:flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg transition-colors',
+              isTransparent ? 'text-white hover:bg-white/10' : 'text-[var(--foreground)] hover:bg-[var(--muted)]'
             )}
             aria-label={t('navbar.toggleTheme')}
             title={t('navbar.toggleTheme')}
           >
             {mounted ? (
-              theme === 'dark' ? (
-                <Sun className="h-5 w-5" aria-hidden="true" />
-              ) : (
-                <Moon className="h-5 w-5" aria-hidden="true" />
-              )
+              theme === 'dark' ? <Sun className="h-5 w-5" aria-hidden="true" /> : <Moon className="h-5 w-5" aria-hidden="true" />
             ) : (
               <span className="h-5 w-5 opacity-0" />
             )}
           </button>
 
-          {/* LOGIN / DASHBOARD */}
           {isLoggedIn ? (
             <Link
               href="/dashboard"
               className={cn(
-                'hidden min-h-[44px] sm:inline-flex',
-                'items-center justify-center gap-2 whitespace-nowrap',
-                'rounded-xl',
-                'bg-[var(--primary)]',
-                'px-4 py-2',
-                'text-sm font-semibold',
-                'text-[var(--primary-foreground)]',
-                'shadow-sm',
-                'transition-all',
-                'hover:opacity-90',
-                'active:scale-[0.98]'
+                'hidden min-h-[44px] sm:inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl',
+                'bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-[var(--primary-foreground)]',
+                'shadow-sm transition-all hover:opacity-90 active:scale-[0.98]'
               )}
             >
               <LayoutDashboard className="h-4 w-4" />
@@ -317,44 +260,26 @@ export default function Navbar() {
             <Link
               href="/login"
               className={cn(
-                'hidden min-h-[44px] sm:inline-flex',
-                'items-center justify-center whitespace-nowrap',
-                'rounded-xl',
-                'bg-[var(--accent)]',
-                'px-5 py-2',
-                'text-sm font-semibold',
-                'text-[var(--accent-foreground)]',
-                'shadow-sm',
-                'transition-all',
-                'hover:bg-[var(--accent-hover)]',
-                'active:scale-[0.98]'
+                'hidden min-h-[44px] sm:inline-flex items-center justify-center whitespace-nowrap rounded-xl',
+                'bg-[var(--accent)] px-5 py-2 text-sm font-semibold text-[var(--accent-foreground)]',
+                'shadow-sm transition-all hover:bg-[var(--accent-hover)] active:scale-[0.98]'
               )}
             >
               {t('navbar.login')}
             </Link>
           )}
 
-          {/* MOBILE MENU TOGGLE */}
           <button
             type="button"
-            onClick={() => setIsOpen((current) => !current)}
+            onClick={() => setIsOpen((c) => !c)}
             className={cn(
-              'flex lg:hidden',
-              'min-h-[44px] min-w-[44px]',
-              'items-center justify-center',
-              'rounded-lg',
-              'text-[var(--foreground)]',
-              'transition-colors',
-              'hover:bg-[var(--muted)]'
+              'flex lg:hidden min-h-[44px] min-w-[44px] items-center justify-center rounded-lg transition-colors',
+              isTransparent ? 'text-white hover:bg-white/10' : 'text-[var(--foreground)] hover:bg-[var(--muted)]'
             )}
             aria-label={isOpen ? t('navbar.closeMenu') : t('navbar.openMenu')}
             aria-expanded={isOpen}
           >
-            {isOpen ? (
-              <X className="h-6 w-6" aria-hidden="true" />
-            ) : (
-              <Menu className="h-6 w-6" aria-hidden="true" />
-            )}
+            {isOpen ? <X className="h-6 w-6" aria-hidden="true" /> : <Menu className="h-6 w-6" aria-hidden="true" />}
           </button>
         </div>
       </div>
@@ -362,8 +287,7 @@ export default function Navbar() {
       {/* MOBILE MENU */}
       <div
         className={cn(
-          'lg:hidden',
-          'border-t border-[var(--border)]',
+          'lg:hidden border-t border-[var(--border)]',
           'bg-[var(--background)]',
           isOpen ? 'block' : 'hidden'
         )}
@@ -374,86 +298,46 @@ export default function Navbar() {
               key={link.href}
               href={link.href}
               onClick={() => setIsOpen(false)}
-              className={cn(
-                'flex min-h-[48px]',
-                'items-center',
-                'rounded-lg px-3',
-                'text-base font-medium',
-                'text-[var(--foreground)]',
-                'transition-colors',
-                'hover:bg-[var(--muted)]'
-              )}
+              className="flex min-h-[48px] items-center rounded-lg px-3 text-base font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--muted)]"
             >
               {link.label}
             </Link>
           ))}
 
-          {/* Mobile Notifications */}
           {isLoggedIn && (
             <Link
               href="/notifications"
               onClick={() => setIsOpen(false)}
-              className={cn(
-                'flex min-h-[48px] items-center gap-3',
-                'rounded-lg px-3',
-                'text-base font-medium',
-                'text-[var(--foreground)]',
-                'transition-colors',
-                'hover:bg-[var(--muted)]'
-              )}
+              className="flex min-h-[48px] items-center gap-3 rounded-lg px-3 text-base font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--muted)]"
             >
               <Bell className="h-5 w-5" />
               {t('navbar.notifications')}
             </Link>
           )}
 
-          {/* Mobile Profile */}
           {isLoggedIn && (
             <Link
               href="/profile"
               onClick={() => setIsOpen(false)}
-              className={cn(
-                'flex min-h-[48px] items-center gap-3',
-                'rounded-lg px-3',
-                'text-base font-medium',
-                'text-[var(--foreground)]',
-                'transition-colors',
-                'hover:bg-[var(--muted)]'
-              )}
+              className="flex min-h-[48px] items-center gap-3 rounded-lg px-3 text-base font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--muted)]"
             >
               <User className="h-5 w-5" />
               {t('navbar.profile')}
             </Link>
           )}
 
-          {/* Mobile Language Dropdown */}
           <div className="border-t border-[var(--border)] pt-2">
             <button
               type="button"
-              onClick={() =>
-                setLanguageOpen((current) => !current)
-              }
-              className={cn(
-                'flex min-h-[48px] w-full',
-                'items-center justify-between',
-                'rounded-lg px-3',
-                'text-base font-medium',
-                'text-[var(--foreground)]',
-                'transition-colors',
-                'hover:bg-[var(--muted)]'
-              )}
+              onClick={() => setLanguageOpen((c) => !c)}
+              className="flex min-h-[48px] w-full items-center justify-between rounded-lg px-3 text-base font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--muted)]"
               aria-expanded={languageOpen}
             >
               <span className="flex items-center gap-3">
                 <Globe2 className="h-5 w-5" />
                 {lang === 'en' ? 'English' : 'العربية'}
               </span>
-              <ChevronDown
-                className={cn(
-                  'h-5 w-5 transition-transform',
-                  languageOpen && 'rotate-180'
-                )}
-              />
+              <ChevronDown className={cn('h-5 w-5 transition-transform', languageOpen && 'rotate-180')} />
             </button>
 
             {languageOpen && (
@@ -462,68 +346,42 @@ export default function Navbar() {
                   type="button"
                   onClick={() => changeLanguage('en')}
                   className={cn(
-                    'flex min-h-[44px] w-full',
-                    'items-center justify-between',
-                    'rounded-lg px-3',
-                    'text-sm',
-                    'hover:bg-[var(--muted)]',
+                    'flex min-h-[44px] w-full items-center justify-between rounded-lg px-3 text-sm hover:bg-[var(--muted)]',
                     lang === 'en' && 'bg-[var(--muted)]'
                   )}
                 >
                   <span className="flex items-center gap-3">
                     <span>🇬🇧</span> English
                   </span>
-                  {lang === 'en' && (
-                    <Check className="h-4 w-4 text-[var(--accent)]" />
-                  )}
+                  {lang === 'en' && <Check className="h-4 w-4 text-[var(--accent)]" />}
                 </button>
-
                 <button
                   type="button"
                   onClick={() => changeLanguage('ar')}
                   className={cn(
-                    'flex min-h-[44px] w-full',
-                    'items-center justify-between',
-                    'rounded-lg px-3',
-                    'text-sm',
-                    'hover:bg-[var(--muted)]',
+                    'flex min-h-[44px] w-full items-center justify-between rounded-lg px-3 text-sm hover:bg-[var(--muted)]',
                     lang === 'ar' && 'bg-[var(--muted)]'
                   )}
                 >
                   <span className="flex items-center gap-3">
                     <span>🇦🇪</span> العربية
                   </span>
-                  {lang === 'ar' && (
-                    <Check className="h-4 w-4 text-[var(--accent)]" />
-                  )}
+                  {lang === 'ar' && <Check className="h-4 w-4 text-[var(--accent)]" />}
                 </button>
               </div>
             )}
           </div>
 
-          {/* Mobile Theme Toggle */}
           <div className="border-t border-[var(--border)] pt-2">
             <button
               type="button"
               onClick={toggleTheme}
-              className={cn(
-                'flex min-h-[48px] w-full',
-                'items-center justify-between',
-                'rounded-lg px-3',
-                'text-base font-medium',
-                'text-[var(--foreground)]',
-                'transition-colors',
-                'hover:bg-[var(--muted)]'
-              )}
+              className="flex min-h-[48px] w-full items-center justify-between rounded-lg px-3 text-base font-medium text-[var(--foreground)] transition-colors hover:bg-[var(--muted)]"
             >
               <span className="flex items-center gap-3">
                 {mounted ? (
                   <>
-                    {theme === 'dark' ? (
-                      <Sun className="h-5 w-5" />
-                    ) : (
-                      <Moon className="h-5 w-5" />
-                    )}
+                    {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                     {theme === 'dark' ? t('navbar.lightMode') : t('navbar.darkMode')}
                   </>
                 ) : (
@@ -536,22 +394,11 @@ export default function Navbar() {
             </button>
           </div>
 
-          {/* Mobile Login / Dashboard */}
           {isLoggedIn ? (
             <Link
               href="/dashboard"
               onClick={() => setIsOpen(false)}
-              className={cn(
-                'mt-2 flex min-h-[48px] w-full',
-                'items-center justify-center gap-2',
-                'rounded-xl',
-                'bg-[var(--primary)]',
-                'px-4 py-3',
-                'text-sm font-semibold',
-                'text-[var(--primary-foreground)]',
-                'transition-all',
-                'hover:opacity-90'
-              )}
+              className="mt-2 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-[var(--primary-foreground)] transition-all hover:opacity-90"
             >
               <LayoutDashboard className="h-4 w-4" />
               {t('navbar.dashboard')}
@@ -560,17 +407,7 @@ export default function Navbar() {
             <Link
               href="/login"
               onClick={() => setIsOpen(false)}
-              className={cn(
-                'mt-2 flex min-h-[48px] w-full',
-                'items-center justify-center',
-                'rounded-xl',
-                'bg-[var(--accent)]',
-                'px-4 py-3',
-                'text-sm font-semibold',
-                'text-[var(--accent-foreground)]',
-                'transition-all',
-                'hover:bg-[var(--accent-hover)]'
-              )}
+              className="mt-2 flex min-h-[48px] w-full items-center justify-center rounded-xl bg-[var(--accent)] px-4 py-3 text-sm font-semibold text-[var(--accent-foreground)] transition-all hover:bg-[var(--accent-hover)]"
             >
               {t('navbar.login')}
             </Link>
