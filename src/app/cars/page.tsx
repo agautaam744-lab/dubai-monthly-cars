@@ -1,4 +1,4 @@
-﻿import Link from 'next/link'
+import Link from 'next/link'
 import { Search, MapPin, CarFront, RotateCcw, TriangleAlert } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { getServerTranslation } from '@/lib/getServerLang'
@@ -80,12 +80,7 @@ export default async function CarsPage({
       status,
       location,
       description,
-      vehicle_images (
-        id,
-        storage_path,
-        is_primary,
-        sort_order
-      ),
+      vehicle_images (id, storage_path, is_primary, sort_order),
       vehicle_pricing (
         monthly_price_aed,
         security_deposit_aed,
@@ -109,10 +104,7 @@ export default async function CarsPage({
         <Navbar />
         <div className="mx-auto max-w-3xl px-4 py-24 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--danger)]/20 to-[var(--danger)]/5 ring-1 ring-inset ring-[var(--danger)]/20">
-            <TriangleAlert
-              className="h-8 w-8 text-[var(--danger)]"
-              aria-hidden="true"
-            />
+            <TriangleAlert className="h-8 w-8 text-[var(--danger)]" aria-hidden="true" />
           </div>
           <h1 className="mt-6 text-2xl font-bold">{t('cars.unableTitle')}</h1>
           <p className="mx-auto mt-3 max-w-md text-[var(--muted-foreground)]">
@@ -121,13 +113,13 @@ export default async function CarsPage({
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               href="/cars"
-              className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-[var(--accent)] px-6 text-sm font-semibold text-[var(--accent-foreground)] transition hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+              className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-[var(--accent)] px-6 text-sm font-semibold text-white transition hover:bg-[var(--accent-hover)]"
             >
               {t('cars.tryAgain')}
             </Link>
             <Link
               href="/"
-              className="inline-flex min-h-[48px] items-center justify-center rounded-xl border border-[var(--border)] px-6 text-sm font-semibold transition hover:bg-[var(--muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+              className="inline-flex min-h-[48px] items-center justify-center rounded-xl border border-[var(--border)] px-6 text-sm font-semibold transition hover:bg-[var(--muted)]"
             >
               {t('cars.backHome')}
             </Link>
@@ -165,46 +157,14 @@ export default async function CarsPage({
       if (!haystack.includes(query)) return false
     }
 
-    if (
-      values.category &&
-      vehicle.category?.toLowerCase() !== values.category.toLowerCase()
-    ) {
-      return false
-    }
-
-    if (
-      values.brand &&
-      vehicle.make?.toLowerCase() !== values.brand.toLowerCase()
-    ) {
-      return false
-    }
-
-    if (values.transmission && vehicle.transmission !== values.transmission) {
-      return false
-    }
-
-    if (values.fuel && vehicle.fuel_type !== values.fuel) {
-      return false
-    }
-
-    if (seats && vehicle.seats !== seats) {
-      return false
-    }
-
-    if (
-      values.location &&
-      vehicle.location?.toLowerCase() !== values.location.toLowerCase()
-    ) {
-      return false
-    }
-
-    if (minPrice > 0 && (startingPrice === null || startingPrice < minPrice)) {
-      return false
-    }
-
-    if (maxPrice > 0 && (startingPrice === null || startingPrice > maxPrice)) {
-      return false
-    }
+    if (values.category && vehicle.category?.toLowerCase() !== values.category.toLowerCase()) return false
+    if (values.brand && vehicle.make?.toLowerCase() !== values.brand.toLowerCase()) return false
+    if (values.transmission && vehicle.transmission !== values.transmission) return false
+    if (values.fuel && vehicle.fuel_type !== values.fuel) return false
+    if (seats && vehicle.seats !== seats) return false
+    if (values.location && vehicle.location?.toLowerCase() !== values.location.toLowerCase()) return false
+    if (minPrice > 0 && (startingPrice === null || startingPrice < minPrice)) return false
+    if (maxPrice > 0 && (startingPrice === null || startingPrice > maxPrice)) return false
 
     return true
   })
@@ -259,51 +219,43 @@ export default async function CarsPage({
   return (
     <main className="min-h-screen bg-[var(--background)]">
       <Navbar />
-      {/* HEADER */}
-      <section className="relative overflow-hidden border-b border-[var(--border)] bg-[var(--muted)]">
+
+      {/* CINEMATIC HEADER */}
+      <section className="relative overflow-hidden border-b border-[var(--border)]">
+        <div className="absolute inset-0 bg-gradient-to-b from-[var(--muted)] to-[var(--background)]" />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_55%_70%_at_50%_0%,rgba(201,162,39,0.14),transparent)]"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_70%_at_50%_0%,rgba(201,162,39,0.18),transparent)]"
         />
-        <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+
+        <div className="relative mx-auto max-w-7xl px-4 pb-10 pt-16 sm:px-6 sm:pb-12 sm:pt-20 lg:px-8 lg:pb-14 lg:pt-24">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
             {t('cars.tagline')}
           </p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+          <h1 className="mt-3 font-serif text-4xl tracking-tight sm:text-5xl lg:text-6xl">
             {t('cars.title')}
           </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted-foreground)] sm:text-base">
-            {t('cars.subtitle')} {allVehicles.length}{' '}
+          <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--foreground)]/70 sm:text-lg">
+            {t('cars.subtitle')}{' '}
+            <span className="font-semibold text-[var(--foreground)]">
+              {allVehicles.length}
+            </span>{' '}
             {allVehicles.length === 1 ? t('cars.car') : t('cars.carsPlural')}{' '}
             {t('cars.readyToRent')}.
           </p>
 
-          <form
-            method="GET"
-            role="search"
-            className="mt-5 flex max-w-xl gap-2"
-          >
-            {values.category && (
-              <input type="hidden" name="category" value={values.category} />
-            )}
-            {values.sort !== 'newest' && (
-              <input type="hidden" name="sort" value={values.sort} />
-            )}
+          {/* SEARCH BAR */}
+          <form method="GET" role="search" className="mt-8 flex max-w-2xl gap-2">
+            {values.category && <input type="hidden" name="category" value={values.category} />}
+            {values.sort !== 'newest' && <input type="hidden" name="sort" value={values.sort} />}
             {values.brand && <input type="hidden" name="brand" value={values.brand} />}
-            {values.transmission && (
-              <input type="hidden" name="transmission" value={values.transmission} />
-            )}
+            {values.transmission && <input type="hidden" name="transmission" value={values.transmission} />}
             {values.fuel && <input type="hidden" name="fuel" value={values.fuel} />}
             {values.seats && <input type="hidden" name="seats" value={values.seats} />}
-            {values.minPrice && (
-              <input type="hidden" name="minPrice" value={values.minPrice} />
-            )}
-            {values.maxPrice && (
-              <input type="hidden" name="maxPrice" value={values.maxPrice} />
-            )}
-            {values.location && (
-              <input type="hidden" name="location" value={values.location} />
-            )}
+            {values.minPrice && <input type="hidden" name="minPrice" value={values.minPrice} />}
+            {values.maxPrice && <input type="hidden" name="maxPrice" value={values.maxPrice} />}
+            {values.location && <input type="hidden" name="location" value={values.location} />}
+
             <label htmlFor="cars-search" className="sr-only">
               {t('cars.searchPlaceholder')}
             </label>
@@ -324,11 +276,27 @@ export default async function CarsPage({
             </div>
             <button
               type="submit"
-              className="inline-flex min-h-[52px] shrink-0 items-center justify-center rounded-2xl bg-[var(--accent)] px-6 text-sm font-semibold text-[var(--accent-foreground)] shadow-sm transition hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] active:scale-[0.98]"
+              className="inline-flex min-h-[52px] shrink-0 items-center justify-center gap-2 rounded-2xl bg-[var(--accent)] px-6 text-sm font-semibold text-white shadow-lg shadow-[var(--accent)]/20 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[var(--accent)]/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] active:scale-[0.98]"
             >
-              {t('cars.search')}
+              <Search className="h-4 w-4" aria-hidden="true" />
+              <span className="hidden sm:inline">{t('cars.search')}</span>
             </button>
           </form>
+
+          {/* STATS STRIP */}
+          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[var(--foreground)]/60">
+            <span className="inline-flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+              </span>
+              Live availability
+            </span>
+            <span className="inline-flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-[var(--accent)]" aria-hidden="true" />
+              {t('cars.dubai')}
+            </span>
+          </div>
         </div>
       </section>
 
@@ -339,15 +307,15 @@ export default async function CarsPage({
             aria-label="Browse by category"
             className="mx-auto max-w-7xl overflow-x-auto px-4 [-ms-overflow-style:none] [scrollbar-width:none] sm:px-6 lg:px-8 [&::-webkit-scrollbar]:hidden"
           >
-            <ul className="flex gap-2 py-3">
+            <ul className="flex gap-2 py-4">
               <li className="shrink-0">
                 <Link
                   href={hrefWith(params, { category: undefined })}
                   aria-current={!values.category ? 'page' : undefined}
-                  className={`inline-flex min-h-[40px] items-center whitespace-nowrap rounded-full border px-4 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${
+                  className={`inline-flex min-h-[40px] items-center whitespace-nowrap rounded-full border px-4 text-sm font-semibold transition-all hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${
                     !values.category
-                      ? 'border-[var(--accent)] bg-[var(--accent)] font-semibold text-[var(--accent-foreground)] shadow-sm'
-                      : 'border-[var(--border)] bg-[var(--card)] hover:border-[var(--accent)]/50'
+                      ? 'border-[var(--accent)] bg-[var(--accent)] text-white shadow-sm shadow-[var(--accent)]/20'
+                      : 'border-[var(--border)] bg-[var(--card)] hover:border-[var(--accent)]/50 hover:text-[var(--accent)]'
                   }`}
                 >
                   {t('cars.allCars')}
@@ -361,10 +329,10 @@ export default async function CarsPage({
                     <Link
                       href={hrefWith(params, { category })}
                       aria-current={active ? 'page' : undefined}
-                      className={`inline-flex min-h-[40px] items-center whitespace-nowrap rounded-full border px-4 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${
+                      className={`inline-flex min-h-[40px] items-center whitespace-nowrap rounded-full border px-4 text-sm font-semibold transition-all hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] ${
                         active
-                          ? 'border-[var(--accent)] bg-[var(--accent)] font-semibold text-[var(--accent-foreground)] shadow-sm'
-                          : 'border-[var(--border)] bg-[var(--card)] hover:border-[var(--accent)]/50'
+                          ? 'border-[var(--accent)] bg-[var(--accent)] text-white shadow-sm shadow-[var(--accent)]/20'
+                          : 'border-[var(--border)] bg-[var(--card)] hover:border-[var(--accent)]/50 hover:text-[var(--accent)]'
                       }`}
                     >
                       {category}
@@ -377,19 +345,22 @@ export default async function CarsPage({
         </div>
       )}
 
-      <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
-        <div className="grid gap-8 lg:grid-cols-[260px_minmax(0,1fr)]">
+      {/* RESULTS */}
+      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+        <div className="grid gap-8 lg:grid-cols-[280px_minmax(0,1fr)]">
           {/* DESKTOP FILTER */}
           <aside
             aria-label="Filter cars"
-            className="hidden h-fit rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 lg:block lg:sticky lg:top-24"
+            className="hidden h-fit rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 lg:sticky lg:top-24 lg:block"
           >
             <div className="mb-5 flex items-center justify-between">
-              <h2 className="font-semibold">{t('cars.filtersHeading')}</h2>
+              <h2 className="font-serif text-lg tracking-tight">
+                {t('cars.filtersHeading')}
+              </h2>
               {activeFilterCount > 0 && (
                 <span
                   aria-label={`${activeFilterCount} filters active`}
-                  className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[11px] font-bold text-[var(--accent-foreground)]"
+                  className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[11px] font-bold text-white"
                 >
                   {activeFilterCount}
                 </span>
@@ -423,14 +394,14 @@ export default async function CarsPage({
               <SortSelect value={values.sort} />
             </div>
 
-            {/* RESULTS TOOLBAR */}
-            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            {/* TOOLBAR */}
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
               <p
                 className="text-sm text-[var(--muted-foreground)]"
                 role="status"
                 aria-live="polite"
               >
-                <span className="text-base font-bold text-[var(--foreground)]">
+                <span className="text-lg font-bold text-[var(--foreground)]">
                   {vehicles.length}
                 </span>{' '}
                 {vehicles.length === 1 ? t('cars.car') : t('cars.carsPlural')}{' '}
@@ -440,7 +411,7 @@ export default async function CarsPage({
                     {' '}·{' '}
                     <Link
                       href="/cars"
-                      className="font-medium text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] rounded"
+                      className="font-medium text-[var(--accent)] hover:underline"
                     >
                       {t('cars.clear')} {activeFilterCount}{' '}
                       {activeFilterCount === 1 ? t('cars.filter') : t('cars.filters')}
@@ -449,33 +420,23 @@ export default async function CarsPage({
                 )}
               </p>
 
-              <div className="hidden items-center gap-2 text-sm text-[var(--muted-foreground)] lg:flex">
-                <MapPin className="h-4 w-4" aria-hidden="true" />
-                {t('cars.dubai')}
-              </div>
-
               <div className="hidden lg:block lg:w-56">
                 <SortSelect value={values.sort} />
               </div>
             </div>
 
             {vehicles.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--card)] px-6 py-16 text-center shadow-sm">
+              <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--card)] px-6 py-16 text-center">
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 ring-1 ring-inset ring-[var(--accent)]/20">
-                  <CarFront
-                    className="h-8 w-8 text-[var(--muted-foreground)]"
-                    aria-hidden="true"
-                  />
+                  <CarFront className="h-8 w-8 text-[var(--muted-foreground)]" aria-hidden="true" />
                 </div>
-                <h2 className="mt-5 text-xl font-semibold">
-                  {t('cars.noMatchTitle')}
-                </h2>
+                <h2 className="mt-5 text-xl font-semibold">{t('cars.noMatchTitle')}</h2>
                 <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--muted-foreground)]">
                   {values.q ? t('cars.noMatchQuery') : t('cars.noMatchBody')}
                 </p>
                 <Link
                   href="/cars"
-                  className="mt-6 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-6 text-sm font-semibold text-[var(--accent-foreground)] transition hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
+                  className="mt-6 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-6 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[var(--accent-hover)]"
                 >
                   <RotateCcw className="h-4 w-4" aria-hidden="true" />
                   {t('cars.clearFilters')}
