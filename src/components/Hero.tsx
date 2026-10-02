@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -9,7 +9,7 @@ export default function Hero() {
   const { t } = useLanguage();
 
   return (
-    <section className="relative min-h-[100svh] overflow-hidden bg-[var(--background)]">
+    <section className="relative min-h-[100svh] -mt-16 overflow-hidden bg-[var(--background)]">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 z-10 bg-[radial-gradient(ellipse_60%_55%_at_50%_0%,rgba(201,162,39,0.22),transparent_70%)]" />
 

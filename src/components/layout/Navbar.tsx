@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -109,7 +109,7 @@ export default function Navbar() {
   return (
     <header
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 w-full',
+        'sticky top-0 z-50 w-full',
         'transition-all duration-300',
         isTransparent
           ? 'border-b border-transparent bg-transparent'
@@ -185,7 +185,7 @@ export default function Navbar() {
                     role="menuitem"
                   >
                     <span className="flex items-center gap-3">
-                      <span className="text-base">🇬🇧</span> English
+                      <span className="text-base">????</span> English
                     </span>
                     {lang === 'en' && <Check className="h-4 w-4 text-[var(--accent)]" />}
                   </button>
@@ -199,7 +199,7 @@ export default function Navbar() {
                     role="menuitem"
                   >
                     <span className="flex items-center gap-3">
-                      <span className="text-base">🇦🇪</span> العربية
+                      <span className="text-base">????</span> ???????
                     </span>
                     {lang === 'ar' && <Check className="h-4 w-4 text-[var(--accent)]" />}
                   </button>
@@ -335,7 +335,7 @@ export default function Navbar() {
             >
               <span className="flex items-center gap-3">
                 <Globe2 className="h-5 w-5" />
-                {lang === 'en' ? 'English' : 'العربية'}
+                {lang === 'en' ? 'English' : '???????'}
               </span>
               <ChevronDown className={cn('h-5 w-5 transition-transform', languageOpen && 'rotate-180')} />
             </button>
@@ -351,7 +351,7 @@ export default function Navbar() {
                   )}
                 >
                   <span className="flex items-center gap-3">
-                    <span>🇬🇧</span> English
+                    <span>????</span> English
                   </span>
                   {lang === 'en' && <Check className="h-4 w-4 text-[var(--accent)]" />}
                 </button>
@@ -364,7 +364,7 @@ export default function Navbar() {
                   )}
                 >
                   <span className="flex items-center gap-3">
-                    <span>🇦🇪</span> العربية
+                    <span>????</span> ???????
                   </span>
                   {lang === 'ar' && <Check className="h-4 w-4 text-[var(--accent)]" />}
                 </button>
