@@ -1,81 +1,140 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { Car, Phone } from 'lucide-react'
-import { siteConfig } from '@/lib/site'
-import LanguageSwitcher from '@/components/LanguageSwitcher'
-
-// Hidden on staff-only routes: the admin panel has its own chrome.
-const HIDDEN_PREFIXES = ['/admin', '/admin-login']
+import Link from "next/link";
+import { Car, Mail, Phone, MapPin, Globe2, Send, User } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Footer() {
-  const pathname = usePathname()
+  const { lang, t } = useLanguage();
+  const isAr = lang === "ar";
+  const year = new Date().getFullYear();
 
-  if (HIDDEN_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
-    return null
-  }
+  const copy = {
+    description: isAr
+      ? "تأجير سيارات شهري فاخر في دبي. خطط مرنة، توصيل إلى المنزل، وبدون التزامات طويلة الأمد."
+      : "Premium monthly car rental in Dubai. Flexible plans, home delivery, and no long-term commitment.",
+    explore: isAr ? "استكشف" : "Explore",
+    legal: isAr ? "القانوني" : "Legal",
+    contact: isAr ? "تواصل معنا" : "Contact",
+    privacy: isAr ? "الخصوصية" : "Privacy",
+    terms: isAr ? "الشروط والأحكام" : "Terms",
+    cookies: isAr ? "ملفات تعريف الارتباط" : "Cookies",
+    rights: isAr ? "جميع الحقوق محفوظة." : "All rights reserved.",
+    madeIn: isAr ? "صُنع في الإمارات" : "Made in UAE",
+    address: isAr ? "دبي، الإمارات العربية المتحدة" : "Dubai, United Arab Emirates",
+  };
 
   return (
-    <footer
-      aria-label="Site footer"
-      className="border-t border-[var(--border)] bg-[var(--card)]"
-    >
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
-          {/* Brand */}
+    <footer className="relative overflow-hidden border-t border-[var(--border)] bg-[var(--background)]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(201,162,39,0.06),transparent)]" />
+
+      <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+        <div className="grid gap-10 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div>
-            <Link
-              href="/"
-              className="inline-flex min-h-[44px] items-center gap-2 font-semibold tracking-tight focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] rounded-lg"
-            >
+            <Link href="/" className="inline-flex items-center gap-2 font-serif text-xl font-bold tracking-tight">
               <Car className="h-6 w-6 text-[var(--accent)]" aria-hidden="true" />
-              <span className="whitespace-nowrap">{siteConfig.brand}</span>
+              Dubai Monthly Cars
             </Link>
-            <p className="mt-4 max-w-xs text-sm leading-6 text-[var(--muted-foreground)]">
-              {siteConfig.description}
+            <p className="mt-4 max-w-sm text-sm leading-6 text-[var(--foreground)]/70">
+              {copy.description}
             </p>
-            <a
-              href={siteConfig.supportPhoneHref}
-              className="mt-4 inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-[var(--border)] px-4 text-sm font-semibold transition hover:bg-[var(--muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-            >
-              <Phone className="h-4 w-4 text-[var(--accent)]" aria-hidden="true" />
-              {siteConfig.supportPhoneDisplay}
-            </a>
+
+            <div className="mt-6 flex gap-3">
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--foreground)]/70 transition hover:-translate-y-0.5 hover:border-[var(--accent)] hover:text-[var(--accent)]">
+                <Globe2 className="h-4 w-4" aria-hidden="true" />
+              </a>
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--foreground)]/70 transition hover:-translate-y-0.5 hover:border-[var(--accent)] hover:text-[var(--accent)]">
+                <Send className="h-4 w-4" aria-hidden="true" />
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--foreground)]/70 transition hover:-translate-y-0.5 hover:border-[var(--accent)] hover:text-[var(--accent)]">
+                <User className="h-4 w-4" aria-hidden="true" />
+              </a>
+            </div>
           </div>
 
-          {/* Link groups */}
-          {siteConfig.linkGroups.map((group) => (
-            <nav key={group.title} aria-label={`Footer — ${group.title}`}>
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-[var(--foreground)]">
-                {group.title}
-              </h2>
-              <ul className="mt-4 space-y-1">
-                {group.links.map((link) => (
-                  <li key={`${group.title}-${link.label}`}>
-                    <Link
-                      href={link.href}
-                      className="inline-flex min-h-[44px] items-center rounded-lg text-sm text-[var(--muted-foreground)] transition hover:text-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          ))}
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+              {copy.explore}
+            </h3>
+            <ul className="mt-4 space-y-3">
+              <li>
+                <Link href="/cars" className="text-sm text-[var(--foreground)]/70 transition hover:text-[var(--accent)]">
+                  {t("navbar.browseCars")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/how-it-works" className="text-sm text-[var(--foreground)]/70 transition hover:text-[var(--accent)]">
+                  {t("navbar.howItWorks")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/bookings" className="text-sm text-[var(--foreground)]/70 transition hover:text-[var(--accent)]">
+                  {t("navbar.myBookings")}
+                </Link>
+              </li>
+              <li>
+                <Link href="/support" className="text-sm text-[var(--foreground)]/70 transition hover:text-[var(--accent)]">
+                  {t("navbar.support")}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+              {copy.legal}
+            </h3>
+            <ul className="mt-4 space-y-3">
+              <li>
+                <Link href="/privacy" className="text-sm text-[var(--foreground)]/70 transition hover:text-[var(--accent)]">
+                  {copy.privacy}
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="text-sm text-[var(--foreground)]/70 transition hover:text-[var(--accent)]">
+                  {copy.terms}
+                </Link>
+              </li>
+              <li>
+                <Link href="/cookies" className="text-sm text-[var(--foreground)]/70 transition hover:text-[var(--accent)]">
+                  {copy.cookies}
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+              {copy.contact}
+            </h3>
+            <ul className="mt-4 space-y-3">
+              <li className="flex items-start gap-3 text-sm text-[var(--foreground)]/70">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" aria-hidden="true" />
+                <span>{copy.address}</span>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[var(--foreground)]/70">
+                <Mail className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" aria-hidden="true" />
+                <a href="mailto:hello@dubaimonthlycars.ae" className="transition hover:text-[var(--accent)]">
+                  hello@dubaimonthlycars.ae
+                </a>
+              </li>
+              <li className="flex items-start gap-3 text-sm text-[var(--foreground)]/70">
+                <Phone className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" aria-hidden="true" />
+                <a href="tel:+971500000000" className="transition hover:text-[var(--accent)]" dir="ltr">
+                  +971 50 000 0000
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-[var(--border)] pt-6 sm:flex-row">
-          <p className="text-center text-xs text-[var(--muted-foreground)] sm:text-left">
-            © {new Date().getFullYear()} {siteConfig.brand}. All rights reserved.
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-[var(--border)] pt-8 sm:flex-row">
+          <p className="text-xs text-[var(--foreground)]/50">
+            {year} Dubai Monthly Cars. {copy.rights}
           </p>
-          <div className="flex items-center gap-3">
-            <LanguageSwitcher />
-          </div>
+          <p className="text-xs text-[var(--foreground)]/50">{copy.madeIn}</p>
         </div>
       </div>
     </footer>
-  )
+  );
 }
