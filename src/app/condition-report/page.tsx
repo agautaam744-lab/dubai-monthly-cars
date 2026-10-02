@@ -1,7 +1,15 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Camera, ChevronRight, Calendar, Car } from 'lucide-react'
+import {
+  Camera,
+  ChevronRight,
+  Calendar,
+  Car,
+  Sparkles,
+  ArrowRight,
+  CheckCircle2,
+} from 'lucide-react'
 
 export default async function ConditionReportListPage() {
   const supabase = await createClient()
@@ -30,117 +38,155 @@ export default async function ConditionReportListPage() {
     reports?.filter((r) => r.booking_id === bookingId && r.type === type).length ?? 0
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 min-h-screen bg-[var(--background)]">
-      <div className="mb-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--accent)]">
-          Vehicle Inspections
-        </p>
-        <h1 className="mt-2 text-3xl font-bold">Condition Reports</h1>
-        <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-          Record vehicle condition with photos at pickup and return.
-        </p>
-      </div>
+    <main className="min-h-screen bg-[var(--background)]">
+      {/* CINEMATIC HEADER */}
+      <section className="relative overflow-hidden border-b border-[var(--border)]">
+        <div className="absolute inset-0 bg-gradient-to-b from-[var(--muted)] to-[var(--background)]" />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_70%_at_50%_0%,rgba(201,162,39,0.15),transparent)]"
+        />
 
-      {!bookings || bookings.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-[var(--border)] bg-[var(--card)] p-12 text-center">
-          <Camera className="mx-auto h-12 w-12 text-[var(--muted-foreground)]" />
-          <h2 className="mt-4 text-lg font-semibold">No active bookings</h2>
-          <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-            Condition reports are available once you have an active booking.
+        <div className="relative mx-auto max-w-5xl px-4 pb-10 pt-16 sm:px-6 sm:pb-12 sm:pt-20 lg:px-8 lg:pb-14 lg:pt-24">
+          <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
+            <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+            Vehicle Inspections
           </p>
-          <Link
-            href="/cars"
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-6 py-3 text-sm font-bold text-[var(--accent-foreground)] transition hover:bg-[var(--accent-hover)]"
-          >
-            Browse Cars
-            <ChevronRight className="h-4 w-4" />
-          </Link>
+          <h1 className="mt-3 font-serif text-4xl tracking-tight sm:text-5xl">
+            Condition Reports
+          </h1>
+          <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--foreground)]/70">
+            Record vehicle condition with photos at pickup and return. Protect yourself with clear evidence.
+          </p>
         </div>
-      ) : (
-        <div className="space-y-5">
-          {bookings.map((booking) => {
-            const vehicle = Array.isArray(booking.vehicles)
-              ? booking.vehicles[0]
-              : booking.vehicles
-            if (!vehicle) return null
+      </section>
 
-            const pickupCount = reportCount(booking.id, 'pickup')
-            const returnCount = reportCount(booking.id, 'return')
+      <section className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
+        {!bookings || bookings.length === 0 ? (
+          <div className="rounded-3xl border border-dashed border-[var(--border)] bg-[var(--card)] p-14 text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 ring-1 ring-inset ring-[var(--accent)]/20">
+              <Camera className="h-8 w-8 text-[var(--accent)]" aria-hidden="true" />
+            </div>
+            <h2 className="mt-5 font-serif text-2xl tracking-tight">
+              No active bookings
+            </h2>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--muted-foreground)]">
+              Condition reports are available once you have an active booking.
+            </p>
+            <Link
+              href="/cars"
+              className="group mt-6 inline-flex min-h-[48px] items-center gap-2 rounded-full bg-[var(--accent)] px-6 text-sm font-semibold text-white shadow-lg shadow-[var(--accent)]/20 transition-all hover:-translate-y-0.5"
+            >
+              Browse Cars
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5" aria-hidden="true" />
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {bookings.map((booking) => {
+              const vehicle = Array.isArray(booking.vehicles)
+                ? booking.vehicles[0]
+                : booking.vehicles
+              if (!vehicle) return null
 
-            return (
-              <div
-                key={booking.id}
-                className="overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)]"
-              >
-                <div className="flex items-start gap-4 border-b border-[var(--border)] p-5 sm:p-6">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--accent)]/10">
-                    <Car className="h-6 w-6 text-[var(--accent)]" />
+              const pickupCount = reportCount(booking.id, 'pickup')
+              const returnCount = reportCount(booking.id, 'return')
+
+              return (
+                <div
+                  key={booking.id}
+                  className="group overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent)]/40 hover:shadow-xl hover:shadow-[var(--accent)]/5"
+                >
+                  <div className="flex items-start gap-4 border-b border-[var(--border)] p-6">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--muted)]/40">
+                      <Car className="h-6 w-6 text-[var(--accent)]" aria-hidden="true" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-serif text-2xl tracking-tight">
+                        {vehicle.make} {vehicle.model}
+                      </h3>
+                      <p className="mt-1.5 flex items-center gap-2 text-sm text-[var(--muted-foreground)]">
+                        <Calendar className="h-3.5 w-3.5 text-[var(--accent)]" aria-hidden="true" />
+                        Started{' '}
+                        {new Date(booking.start_date).toLocaleDateString('en-AE', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </p>
+                      <p className="mt-1 font-mono text-xs text-[var(--muted-foreground)]">
+                        #{booking.id.slice(0, 8).toUpperCase()}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold">
-                      {vehicle.make} {vehicle.model}
-                    </h3>
-                    <p className="mt-1 flex items-center gap-2 text-xs text-[var(--muted-foreground)]">
-                      <Calendar className="h-3 w-3" />
-                      Start:{' '}
-                      {new Date(booking.start_date).toLocaleDateString('en-AE', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
-                    </p>
-                    <p className="mt-1 font-mono text-xs text-[var(--muted-foreground)]">
-                      Booking #{booking.id.slice(0, 8).toUpperCase()}
-                    </p>
+
+                  <div className="grid gap-3 p-6 sm:grid-cols-2">
+                    <Link
+                      href={`/condition-report/${booking.id}?type=pickup`}
+                      className="group/btn flex items-center justify-between gap-4 rounded-2xl border border-[var(--border)] bg-[var(--background)] p-5 transition-all hover:-translate-y-0.5 hover:border-sky-500/50 hover:shadow-md"
+                    >
+                      <div className="flex min-w-0 items-center gap-4">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-sky-500/10">
+                          <Camera className="h-6 w-6 text-sky-600" aria-hidden="true" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-serif text-lg tracking-tight">
+                            Pickup Report
+                          </p>
+                          <p className="mt-0.5 flex items-center gap-1.5 text-xs text-[var(--muted-foreground)]">
+                            {pickupCount > 0 ? (
+                              <>
+                                <CheckCircle2 className="h-3 w-3 text-emerald-500" aria-hidden="true" />
+                                {pickupCount} submitted
+                              </>
+                            ) : (
+                              'Not submitted yet'
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronRight
+                        className="h-5 w-5 shrink-0 text-[var(--muted-foreground)] transition-transform group-hover/btn:translate-x-0.5 group-hover/btn:text-sky-600 rtl:rotate-180 rtl:group-hover/btn:-translate-x-0.5"
+                        aria-hidden="true"
+                      />
+                    </Link>
+
+                    <Link
+                      href={`/condition-report/${booking.id}?type=return`}
+                      className="group/btn flex items-center justify-between gap-4 rounded-2xl border border-[var(--border)] bg-[var(--background)] p-5 transition-all hover:-translate-y-0.5 hover:border-emerald-500/50 hover:shadow-md"
+                    >
+                      <div className="flex min-w-0 items-center gap-4">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-500/10">
+                          <Camera className="h-6 w-6 text-emerald-600" aria-hidden="true" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-serif text-lg tracking-tight">
+                            Return Report
+                          </p>
+                          <p className="mt-0.5 flex items-center gap-1.5 text-xs text-[var(--muted-foreground)]">
+                            {returnCount > 0 ? (
+                              <>
+                                <CheckCircle2 className="h-3 w-3 text-emerald-500" aria-hidden="true" />
+                                {returnCount} submitted
+                              </>
+                            ) : (
+                              'Not submitted yet'
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronRight
+                        className="h-5 w-5 shrink-0 text-[var(--muted-foreground)] transition-transform group-hover/btn:translate-x-0.5 group-hover/btn:text-emerald-600 rtl:rotate-180 rtl:group-hover/btn:-translate-x-0.5"
+                        aria-hidden="true"
+                      />
+                    </Link>
                   </div>
                 </div>
-
-                <div className="grid gap-3 p-5 sm:grid-cols-2 sm:p-6">
-                  <Link
-                    href={`/condition-report/${booking.id}?type=pickup`}
-                    className="group flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--background)] p-4 transition hover:border-[var(--accent)]/50"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10">
-                        <Camera className="h-5 w-5 text-blue-500" />
-                      </div>
-                      <div>
-                        <p className="font-semibold">Pickup Report</p>
-                        <p className="text-xs text-[var(--muted-foreground)]">
-                          {pickupCount > 0
-                            ? `${pickupCount} submitted`
-                            : 'Not submitted yet'}
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-[var(--muted-foreground)] transition group-hover:text-[var(--accent)]" />
-                  </Link>
-
-                  <Link
-                    href={`/condition-report/${booking.id}?type=return`}
-                    className="group flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--background)] p-4 transition hover:border-[var(--accent)]/50"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/10">
-                        <Camera className="h-5 w-5 text-green-500" />
-                      </div>
-                      <div>
-                        <p className="font-semibold">Return Report</p>
-                        <p className="text-xs text-[var(--muted-foreground)]">
-                          {returnCount > 0
-                            ? `${returnCount} submitted`
-                            : 'Not submitted yet'}
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-[var(--muted-foreground)] transition group-hover:text-[var(--accent)]" />
-                  </Link>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
+              )
+            })}
+          </div>
+        )}
+      </section>
     </main>
   )
 }
