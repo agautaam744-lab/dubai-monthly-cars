@@ -20,6 +20,7 @@ import {
 import { cn } from '@/lib/utils/cn'
 import { useLanguage } from '@/contexts/LanguageContext'
 import NotificationBell from './NotificationBell'
+import LogoutButton from './LogoutButton'
 import { createClient } from '@/lib/supabase/client'
 
 export default function Navbar() {
@@ -102,9 +103,6 @@ export default function Navbar() {
   const textMuted = isTransparent
     ? 'text-white/75 hover:text-white'
     : 'text-[var(--foreground)]/75 hover:text-[var(--foreground)]'
-  const hoverBg = isTransparent
-    ? 'hover:bg-white/10'
-    : 'hover:bg-[var(--muted)]'
 
   return (
     <header
@@ -171,7 +169,7 @@ export default function Navbar() {
 
             {languageOpen && (
               <div
-                className="absolute right-0 top-full mt-2 w-48 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-xl"
+                className="absolute end-0 top-full mt-2 w-48 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)] shadow-xl"
                 role="menu"
               >
                 <div className="p-1.5">
@@ -184,9 +182,7 @@ export default function Navbar() {
                     )}
                     role="menuitem"
                   >
-                    <span className="flex items-center gap-3">
-                      <span className="text-base">????</span> English
-                    </span>
+                    <span>English</span>
                     {lang === 'en' && <Check className="h-4 w-4 text-[var(--accent)]" />}
                   </button>
                   <button
@@ -198,9 +194,7 @@ export default function Navbar() {
                     )}
                     role="menuitem"
                   >
-                    <span className="flex items-center gap-3">
-                      <span className="text-base">????</span> ???????
-                    </span>
+                    <span>العربية</span>
                     {lang === 'ar' && <Check className="h-4 w-4 text-[var(--accent)]" />}
                   </button>
                 </div>
@@ -245,17 +239,23 @@ export default function Navbar() {
           </button>
 
           {isLoggedIn ? (
-            <Link
-              href="/dashboard"
-              className={cn(
-                'hidden min-h-[44px] sm:inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl',
-                'bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-[var(--primary-foreground)]',
-                'shadow-sm transition-all hover:opacity-90 active:scale-[0.98]'
-              )}
-            >
-              <LayoutDashboard className="h-4 w-4" />
-              <span className="hidden xl:inline">{t('navbar.dashboard')}</span>
-            </Link>
+            <>
+              <Link
+                href="/dashboard"
+                className={cn(
+                  'hidden min-h-[44px] sm:inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl',
+                  'bg-[var(--primary)] px-4 py-2 text-sm font-semibold text-[var(--primary-foreground)]',
+                  'shadow-sm transition-all hover:opacity-90 active:scale-[0.98]'
+                )}
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                <span className="hidden xl:inline">{t('navbar.dashboard')}</span>
+              </Link>
+
+              <div className="hidden sm:block">
+                <LogoutButton isTransparent={isTransparent} />
+              </div>
+            </>
           ) : (
             <Link
               href="/login"
@@ -335,7 +335,7 @@ export default function Navbar() {
             >
               <span className="flex items-center gap-3">
                 <Globe2 className="h-5 w-5" />
-                {lang === 'en' ? 'English' : '???????'}
+                {lang === 'en' ? 'English' : 'العربية'}
               </span>
               <ChevronDown className={cn('h-5 w-5 transition-transform', languageOpen && 'rotate-180')} />
             </button>
@@ -350,9 +350,7 @@ export default function Navbar() {
                     lang === 'en' && 'bg-[var(--muted)]'
                   )}
                 >
-                  <span className="flex items-center gap-3">
-                    <span>????</span> English
-                  </span>
+                  <span>English</span>
                   {lang === 'en' && <Check className="h-4 w-4 text-[var(--accent)]" />}
                 </button>
                 <button
@@ -363,9 +361,7 @@ export default function Navbar() {
                     lang === 'ar' && 'bg-[var(--muted)]'
                   )}
                 >
-                  <span className="flex items-center gap-3">
-                    <span>????</span> ???????
-                  </span>
+                  <span>العربية</span>
                   {lang === 'ar' && <Check className="h-4 w-4 text-[var(--accent)]" />}
                 </button>
               </div>
@@ -395,14 +391,23 @@ export default function Navbar() {
           </div>
 
           {isLoggedIn ? (
-            <Link
-              href="/dashboard"
-              onClick={() => setIsOpen(false)}
-              className="mt-2 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-[var(--primary-foreground)] transition-all hover:opacity-90"
-            >
-              <LayoutDashboard className="h-4 w-4" />
-              {t('navbar.dashboard')}
-            </Link>
+            <>
+              <Link
+                href="/dashboard"
+                onClick={() => setIsOpen(false)}
+                className="mt-2 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl bg-[var(--primary)] px-4 py-3 text-sm font-semibold text-[var(--primary-foreground)] transition-all hover:opacity-90"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                {t('navbar.dashboard')}
+              </Link>
+
+              <div className="mt-2 border-t border-[var(--border)] pt-2">
+                <LogoutButton
+                  label={lang === 'ar' ? 'تسجيل الخروج' : 'Logout'}
+                  fullWidth
+                />
+              </div>
+            </>
           ) : (
             <Link
               href="/login"
