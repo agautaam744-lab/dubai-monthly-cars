@@ -6,7 +6,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/server'
+import { requireAdmin } from '@/lib/admin'
 import { approveDocument, rejectDocument, toggleBlacklist } from './actions'
 
 function labelForType(type: string) {
@@ -17,6 +17,8 @@ function labelForType(type: string) {
       return 'Driving License'
     case 'passport':
       return 'Passport'
+    case 'visa':
+      return 'Visa'
     default:
       return type
   }
@@ -25,7 +27,7 @@ function labelForType(type: string) {
 function statusBadge(status: string) {
   if (status === 'approved') {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-green-500/10 px-3 py-1 text-xs font-semibold text-green-600">
+      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-600">
         <CheckCircle2 className="h-4 w-4" />
         Approved
       </span>
@@ -34,7 +36,7 @@ function statusBadge(status: string) {
 
   if (status === 'rejected') {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-3 py-1 text-xs font-semibold text-red-600">
+      <span className="inline-flex items-center gap-1 rounded-full border border-red-500/20 bg-red-500/10 px-3 py-1 text-xs font-semibold text-red-600">
         <XCircle className="h-4 w-4" />
         Rejected
       </span>
@@ -42,7 +44,7 @@ function statusBadge(status: string) {
   }
 
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-600">
+    <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-600">
       <Clock3 className="h-4 w-4" />
       Pending
     </span>
@@ -50,38 +52,8 @@ function statusBadge(status: string) {
 }
 
 export default async function AdminKycPage() {
-  const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return (
-      <main className="min-h-screen p-10">
-        <h1 className="text-2xl font-bold">Unauthorized</h1>
-      </main>
-    )
-  }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  const adminRoles = ['super_admin', 'support', 'fleet_manager']
-
-  if (!profile || !adminRoles.includes(profile.role)) {
-    return (
-      <main className="min-h-screen p-10">
-        <h1 className="text-2xl font-bold">Access denied</h1>
-        <p className="mt-2 text-slate-500">
-          You do not have permission to review KYC documents.
-        </p>
-      </main>
-    )
-  }
+  // ⚡ requireAdmin already fetches user + profile in one go
+  const { supabase } = await requireAdmin()
 
   const { data: documents, error } = await supabase
     .from('documents')
@@ -97,193 +69,193 @@ export default async function AdminKycPage() {
       profiles:user_id ( full_name, email, is_blacklisted )
     `)
     .order('created_at', { ascending: false })
+    .limit(200)
 
   if (error) {
-    throw new Error(error.message)
+    return (
+      <main className="p-6 sm:p-8">
+        <h1 className="text-3xl font-bold">KYC Review</h1>
+        <p className="mt-4 rounded-xl bg-red-500/10 p-4 text-sm text-red-500">
+          Error: {error.message}
+        </p>
+      </main>
+    )
   }
 
-  const enrichedDocuments = await Promise.all(
-    (documents ?? []).map(async (document) => {
-      const { data: signed } = await supabase.storage
-        .from('kyc-documents')
-        .createSignedUrl(document.storage_path, 60 * 10)
+  const all = documents ?? []
+  const pending = all.filter((d) => d.status === 'pending')
+  const approved = all.filter((d) => d.status === 'approved')
+  const rejected = all.filter((d) => d.status === 'rejected')
 
-      return {
-        ...document,
-        signedUrl: signed?.signedUrl ?? null,
-      }
-    })
-  )
+  const grouped = new Map<
+    string,
+    {
+      customer: { full_name?: string; email?: string; is_blacklisted?: boolean } | null
+      documents: typeof all
+    }
+  >()
+
+  for (const doc of all) {
+    const customerRaw = Array.isArray(doc.profiles) ? doc.profiles[0] : doc.profiles
+    const existing = grouped.get(doc.user_id)
+    if (existing) {
+      existing.documents.push(doc)
+    } else {
+      grouped.set(doc.user_id, {
+        customer: customerRaw ?? null,
+        documents: [doc],
+      })
+    }
+  }
 
   return (
     <div className="p-6 sm:p-8">
       <div className="mb-8">
         <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[var(--accent)]">
-          Administration
+          Compliance
         </p>
         <h1 className="mt-2 text-3xl font-bold">KYC Review</h1>
         <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-          Review customer identity documents and approve or reject them securely.
+          Review customer documents and approve or reject KYC verification.
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="mb-8 grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
-          <p className="text-sm text-[var(--muted-foreground)]">
-            Total documents
-          </p>
-          <p className="mt-2 text-3xl font-bold">
-            {enrichedDocuments.length}
-          </p>
+          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-[var(--muted-foreground)]">
+            <Clock3 className="h-4 w-4 text-amber-500" />
+            Pending
+          </div>
+          <p className="mt-2 text-3xl font-bold text-amber-600">{pending.length}</p>
         </div>
-
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
-          <p className="text-sm text-[var(--muted-foreground)]">Pending</p>
-          <p className="mt-2 text-3xl font-bold text-amber-600">
-            {
-              enrichedDocuments.filter((item) => item.status === 'pending')
-                .length
-            }
-          </p>
+          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-[var(--muted-foreground)]">
+            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+            Approved
+          </div>
+          <p className="mt-2 text-3xl font-bold text-emerald-600">{approved.length}</p>
         </div>
-
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
-          <p className="text-sm text-[var(--muted-foreground)]">Approved</p>
-          <p className="mt-2 text-3xl font-bold text-green-600">
-            {
-              enrichedDocuments.filter((item) => item.status === 'approved')
-                .length
-            }
-          </p>
+          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-[var(--muted-foreground)]">
+            <XCircle className="h-4 w-4 text-red-500" />
+            Rejected
+          </div>
+          <p className="mt-2 text-3xl font-bold text-red-600">{rejected.length}</p>
         </div>
       </div>
 
-      <div className="mt-8 space-y-4">
-        {enrichedDocuments.map((document) => {
-          const customer = Array.isArray(document.profiles)
-            ? document.profiles[0]
-            : document.profiles
-
-          return (
-            <article
-              key={document.id}
-              className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5"
+      {all.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-[var(--border)] bg-[var(--card)] p-14 text-center">
+          <ShieldCheck className="mx-auto h-12 w-12 text-emerald-500" />
+          <h2 className="mt-4 text-lg font-semibold">No documents yet</h2>
+          <p className="mt-2 text-sm text-[var(--muted-foreground)]">
+            Customer KYC documents will appear here for review.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {Array.from(grouped.entries()).map(([userId, group]) => (
+            <div
+              key={userId}
+              className="overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm"
             >
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex gap-4">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--accent)]/10">
-                    <FileText className="h-6 w-6 text-[var(--accent)]" />
+              {/* Customer header */}
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--border)] bg-[var(--muted)]/30 p-5">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--accent)]/10 text-sm font-bold text-[var(--accent)]">
+                    {(group.customer?.full_name ?? 'U').slice(0, 1).toUpperCase()}
                   </div>
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="truncate font-semibold">
+                        {group.customer?.full_name ?? 'Unknown customer'}
+                      </p>
+                      {group.customer?.is_blacklisted && (
+                        <span className="rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-600">
+                          Blacklisted
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-0.5 truncate text-xs text-[var(--muted-foreground)]">
+                      {group.customer?.email ?? 'No email'}
+                    </p>
+                  </div>
+                </div>
 
-                  <div>
-                    <div className="flex flex-wrap items-center gap-3">
-                      <h2 className="text-lg font-bold">
-                        {labelForType(document.type)}
-                      </h2>
-                      {statusBadge(String(document.status))}
+                <Link
+                  href={`/admin/kyc/${userId}`}
+                  className="inline-flex min-h-[40px] items-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 text-xs font-semibold transition hover:border-[var(--accent)]/50 hover:text-[var(--accent)]"
+                >
+                  View all documents
+                </Link>
+              </div>
+
+              {/* Documents */}
+              <div className="divide-y divide-[var(--border)]">
+                {group.documents.slice(0, 3).map((doc) => (
+                  <div key={doc.id} className="flex flex-wrap items-center justify-between gap-3 p-5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--muted)]/50">
+                        <FileText className="h-5 w-5 text-[var(--accent)]" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold">{labelForType(doc.type)}</p>
+                        <p className="mt-0.5 text-xs text-[var(--muted-foreground)]">
+                          Uploaded {new Date(doc.created_at).toLocaleDateString('en-AE', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </p>
+                        {doc.rejection_reason && (
+                          <p className="mt-1 text-xs text-red-600">
+                            {doc.rejection_reason}
+                          </p>
+                        )}
+                      </div>
                     </div>
 
-                    <p className="mt-1 text-sm">
-                      {customer?.full_name || 'Customer'}
-                    </p>
-                    <p className="text-sm text-[var(--muted-foreground)]">
-                      {customer?.email || 'No email'}
-                    </p>
-
-                    {document.rejection_reason && (
-                      <p className="mt-2 text-sm text-red-600">
-                        Reason: {document.rejection_reason}
-                      </p>
-                    )}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {statusBadge(doc.status)}
+                      {doc.status === 'pending' && (
+                        <>
+                          <form action={async () => {
+                            'use server'
+                            await approveDocument(doc.id)
+                          }}>
+                            <button
+                              type="submit"
+                              className="inline-flex min-h-[36px] items-center gap-1 rounded-lg bg-emerald-500 px-3 text-xs font-semibold text-white transition hover:bg-emerald-600"
+                            >
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                              Approve
+                            </button>
+                          </form>
+                          <form action={async (formData: FormData) => {
+                            'use server'
+                            const reason = String(formData.get('reason') ?? '')
+                            await rejectDocument(doc.id, reason)
+                          }}>
+                            <input type="hidden" name="reason" value="Document not acceptable" />
+                            <button
+                              type="submit"
+                              className="inline-flex min-h-[36px] items-center gap-1 rounded-lg border border-red-500/30 bg-red-500/5 px-3 text-xs font-semibold text-red-600 transition hover:bg-red-500/10"
+                            >
+                              <XCircle className="h-3.5 w-3.5" />
+                              Reject
+                            </button>
+                          </form>
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
-                  {document.signedUrl && (
-                    <Link
-                      href={document.signedUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold hover:border-[var(--accent)]"
-                    >
-                      View document
-                    </Link>
-                  )}
-
-                  <form
-                    action={async () => {
-                      'use server'
-                      await toggleBlacklist(document.user_id, !customer?.is_blacklisted)
-                    }}
-                  >
-                    <button
-                      type="submit"
-                      className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
-                        customer?.is_blacklisted
-                          ? 'border-red-500 bg-red-500/10 text-red-600 hover:bg-red-500/20'
-                          : 'border-[var(--border)] hover:border-red-400 hover:text-red-500'
-                      }`}
-                    >
-                      {customer?.is_blacklisted ? 'Remove Blacklist' : 'Blacklist Customer'}
-                    </button>
-                  </form>
-
-                  {document.status === 'pending' && (
-                    <>
-                      <form
-                        action={async () => {
-                          'use server'
-                          await approveDocument(document.id)
-                        }}
-                      >
-                        <button
-                          type="submit"
-                          className="inline-flex items-center gap-2 rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700"
-                        >
-                          <ShieldCheck className="h-4 w-4" />
-                          Approve
-                        </button>
-                      </form>
-
-                      <form
-                        action={async (formData) => {
-                          'use server'
-                          const reason = String(formData.get('reason') ?? '')
-                          await rejectDocument(document.id, reason)
-                        }}
-                        className="flex gap-2"
-                      >
-                        <input
-                          name="reason"
-                          required
-                          placeholder="Rejection reason"
-                          className="w-48 rounded-xl border border-[var(--border)] bg-transparent px-3 py-2 text-sm"
-                        />
-                        <button
-                          type="submit"
-                          className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700"
-                        >
-                          <XCircle className="h-4 w-4" />
-                          Reject
-                        </button>
-                      </form>
-                    </>
-                  )}
-                </div>
+                ))}
+                {group.documents.length > 3 && (
+                  <p className="p-3 text-center text-xs text-[var(--muted-foreground)]">
+                    + {group.documents.length - 3} more documents
+                  </p>
+                )}
               </div>
-            </article>
-          )
-        })}
-
-        {enrichedDocuments.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-[var(--border)] p-12 text-center">
-            <p className="font-semibold">No KYC documents found</p>
-            <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-              Uploaded customer documents will appear here.
-            </p>
-          </div>
-        )}
-      </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
