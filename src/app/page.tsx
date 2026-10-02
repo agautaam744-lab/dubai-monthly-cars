@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import Hero from '@/components/Hero'
+import FeaturedCategories from '@/components/FeaturedCategories'
 import { ArrowRight, Shield, Truck, Calendar } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import VehicleCard, { type CarsVehicle } from '@/app/cars/VehicleCard'
@@ -46,6 +47,8 @@ export default async function HomePage() {
 
       <main className="flex-1">
         <Hero />
+
+        <FeaturedCategories />
 
         {/* FEATURED CARS */}
         {vehicles.length > 0 && (
