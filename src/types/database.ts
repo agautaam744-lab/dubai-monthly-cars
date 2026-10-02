@@ -1,4 +1,15 @@
-export type UserRole = 'customer' | 'admin' | 'fleet_manager' | 'finance' | 'support' | 'delivery'
+﻿export const USER_ROLES = [
+  'customer',
+  'super_admin',
+  'fleet_manager',
+  'finance',
+  'support',
+  'delivery',
+] as const
+
+export type UserRole = (typeof USER_ROLES)[number]
+
+export type StaffRole = Exclude<UserRole, 'customer'>
 
 export type VehicleStatus = 'available' | 'rented' | 'maintenance' | 'out_of_service'
 
@@ -128,7 +139,7 @@ export interface Database {
           email: string | null
           preferred_language: 'en' | 'ar'
           preferred_theme: 'light' | 'dark' | 'system'
-          role: 'customer' | 'admin' | 'fleet_manager' | 'finance' | 'support' | 'delivery'
+          role: UserRole
           is_blacklisted: boolean
           corporate_account_id: string | null
           created_at: string

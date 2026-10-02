@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 import { requireAdmin } from '@/lib/admin'
 import AddStaffForm from './AddStaffForm'
-import { promoteToStaff, demoteToCustomer } from './actions'
+import { createStaffMember, promoteToStaff, demoteToCustomer } from './actions'
 
 export default async function AdminStaffPage() {
   const { supabase, user: currentUser } = await requireAdmin()
@@ -68,7 +68,7 @@ export default async function AdminStaffPage() {
             Add, manage, and assign roles to your team members.
           </p>
         </div>
-        <AddStaffForm />
+        <AddStaffForm createStaffMember={createStaffMember} />
       </div>
 
       {/* Stats */}

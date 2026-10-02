@@ -11,9 +11,23 @@ import {
   Eye,
   EyeOff,
 } from 'lucide-react'
-import { createStaffMember } from './actions'
 
-export default function AddStaffForm() {
+
+type CreateStaffMemberAction = (
+  formData: FormData
+) => Promise<{
+  ok: boolean
+  message?: string
+  error?: string
+}>
+
+type AddStaffFormProps = {
+  createStaffMember: CreateStaffMemberAction
+}
+
+export default function AddStaffForm({
+  createStaffMember,
+}: AddStaffFormProps) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)

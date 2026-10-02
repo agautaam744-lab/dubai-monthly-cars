@@ -1,3 +1,4 @@
+﻿import { isStaffRole } from '@/lib/rbac'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
@@ -15,9 +16,9 @@ export async function requireAdmin() {
     .eq('id', user.id)
     .single()
 
-  const adminRoles = ['super_admin', 'fleet_manager', 'finance', 'support', 'delivery']
 
-  if (!profile || !adminRoles.includes(profile.role)) {
+
+  if (!profile || !isStaffRole(profile.role)) {
     redirect('/admin-login')
   }
 

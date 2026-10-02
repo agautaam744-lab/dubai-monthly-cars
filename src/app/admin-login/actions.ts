@@ -1,9 +1,8 @@
 ﻿'use server'
 
+import { isStaffRole } from '@/lib/rbac'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-
-const adminRoles = ['super_admin', 'fleet_manager', 'finance', 'support', 'delivery']
 
 export async function adminLogin(
   _prevState: { error: string | null },
@@ -38,7 +37,7 @@ export async function adminLogin(
     return { error: 'Profile not found. Please contact support.' }
   }
 
-  if (!adminRoles.includes(profile.role)) {
+  if (!isStaffRole(profile.role)) {
     await supabase.auth.signOut()
     return { error: 'This account does not have admin access.' }
   }
