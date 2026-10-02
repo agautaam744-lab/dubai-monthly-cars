@@ -17,6 +17,7 @@ import {
   Megaphone,
   CalendarClock,
   Users2,
+  MapPin,
 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 
@@ -26,6 +27,7 @@ const links = [
   { href: '/admin/bookings', label: 'Bookings', icon: CalendarCheck },
   { href: '/admin/booking-changes', label: 'Changes', icon: CalendarClock },
   { href: '/admin/fleet', label: 'Fleet', icon: Car },
+  { href: '/admin/hubs', label: 'Hubs', icon: MapPin },
   { href: '/admin/maintenance', label: 'Maintenance', icon: Wrench },
   { href: '/admin/corporate', label: 'Corporate', icon: Briefcase },
   { href: '/admin/damage', label: 'Damage', icon: AlertTriangle },
