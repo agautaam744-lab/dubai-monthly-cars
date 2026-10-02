@@ -4,6 +4,7 @@ import { ChevronLeft } from 'lucide-react'
 import { requireAdmin } from '@/lib/admin'
 import VehicleForm from '../VehicleForm'
 import VehicleImageManager from './VehicleImageManager'
+import HubAssignment from '../HubAssignment'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -13,27 +14,36 @@ export default async function VehicleDetailPage({ params }: Props) {
   const { id } = await params
   const { supabase } = await requireAdmin()
 
-  const { data: vehicle, error } = await supabase
-    .from('vehicles')
-    .select(`
-      id,
-      make,
-      model,
-      year,
-      category,
-      transmission,
-      fuel_type,
-      seats,
-      color,
-      plate_number,
-      current_mileage,
-      status,
-      location,
-      description,
-      vehicle_images ( id, storage_path, is_primary, sort_order )
-    `)
-    .eq('id', id)
-    .single()
+  const [{ data: vehicle, error }, { data: hubs }] = await Promise.all([
+    supabase
+      .from('vehicles')
+      .select(`
+        id,
+        make,
+        model,
+        year,
+        category,
+        transmission,
+        fuel_type,
+        seats,
+        color,
+        plate_number,
+        hub_id,
+        current_mileage,
+        status,
+        location,
+        description,
+        vehicle_images ( id, storage_path, is_primary, sort_order )
+      `)
+      .eq('id', id)
+      .single(),
+    supabase
+      .from('hubs')
+      .select('id, name, area, is_primary')
+      .eq('is_active', true)
+      .order('is_primary', { ascending: false })
+      .order('name'),
+  ])
 
   if (error || !vehicle) notFound()
 
@@ -60,7 +70,6 @@ export default async function VehicleDetailPage({ params }: Props) {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_400px]">
-        {/* Form */}
         <div>
           <VehicleForm
             mode="edit"
@@ -83,8 +92,12 @@ export default async function VehicleDetailPage({ params }: Props) {
           />
         </div>
 
-        {/* Photos */}
-        <div className="h-fit lg:sticky lg:top-24">
+        <div className="h-fit space-y-6 lg:sticky lg:top-24">
+          <HubAssignment
+            vehicleId={vehicle.id}
+            currentHubId={vehicle.hub_id ?? null}
+            hubs={hubs ?? []}
+          />
           <VehicleImageManager
             vehicleId={vehicle.id}
             images={vehicle.vehicle_images ?? []}
