@@ -28,24 +28,30 @@ export default async function KycPage() {
 
   return (
     <main className="min-h-screen bg-[var(--background)]">
-      <section className="border-b border-[var(--border)] bg-[var(--muted)]">
-        <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
+      {/* CINEMATIC HEADER */}
+      <section className="relative overflow-hidden border-b border-[var(--border)]">
+        <div className="absolute inset-0 bg-gradient-to-b from-[var(--muted)] to-[var(--background)]" />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_70%_at_50%_0%,rgba(201,162,39,0.15),transparent)]"
+        />
+
+        <div className="relative mx-auto max-w-5xl px-4 pb-10 pt-16 sm:px-6 sm:pb-12 sm:pt-20 lg:px-8 lg:pb-14 lg:pt-24">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
             Customer Verification
           </p>
 
-          <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+          <h1 className="mt-3 font-serif text-4xl tracking-tight sm:text-5xl">
             Complete your KYC
           </h1>
 
-          <p className="mt-3 max-w-2xl text-[var(--muted-foreground)]">
-            Upload the documents required to verify your identity
-            before completing your rental booking.
+          <p className="mt-4 max-w-2xl text-base leading-7 text-[var(--foreground)]/70">
+            Upload the documents required to verify your identity before completing your monthly rental booking.
           </p>
         </div>
       </section>
 
-      <section className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
         <KycForm
           userId={user.id}
           documents={documents ?? []}
