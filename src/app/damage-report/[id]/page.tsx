@@ -53,6 +53,24 @@ export default async function DamageReportPage({ params }: Props) {
     .eq('booking_id', bookingId)
     .order('created_at', { ascending: false })
 
+  const reportsWithUrls = await Promise.all(
+    (reports ?? []).map(async (report) => ({
+      ...report,
+      damage_report_photos: await Promise.all(
+        (report.damage_report_photos ?? []).map(async (photo) => {
+          const { data } = await supabase.storage
+            .from('damage-reports')
+            .createSignedUrl(photo.storage_path, 3600)
+
+          return {
+            ...photo,
+            signed_url: data?.signedUrl ?? null,
+          }
+        })
+      ),
+    }))
+  )
+
   const statusConfig: Record<string, { label: string; className: string; icon: typeof AlertTriangle }> = {
     reported: {
       label: 'Reported',
@@ -155,7 +173,7 @@ export default async function DamageReportPage({ params }: Props) {
             </div>
 
             <div className="space-y-4">
-              {reports.map((r) => {
+              {reportsWithUrls.map((r) => {
                 const config = statusConfig[r.status] ?? statusConfig.reported
                 const StatusIcon = config.icon
 
@@ -232,25 +250,26 @@ export default async function DamageReportPage({ params }: Props) {
                           Photos ({r.damage_report_photos.length})
                         </p>
                         <div className="grid grid-cols-4 gap-2">
-                          {r.damage_report_photos.map((photo: { id: string; storage_path: string }) => {
-                            const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/damage-reports/${photo.storage_path}`
-                            return (
-                              <a
-                                key={photo.id}
-                                href={url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="group aspect-square overflow-hidden rounded-xl border border-[var(--border)] transition hover:-translate-y-0.5 hover:border-[var(--accent)]/50 hover:shadow-md"
-                              >
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img
-                                  src={url}
-                                  alt="Damage"
-                                  className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                                />
-                              </a>
-                            )
-                          })}
+                          {r.damage_report_photos.map((photo) => {
+                          if (!photo.signed_url) return null
+
+                          return (
+                            <a
+                              key={photo.id}
+                              href={photo.signed_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="group aspect-square overflow-hidden rounded-xl border border-[var(--border)] transition hover:-translate-y-0.5 hover:border-[var(--accent)]/50 hover:shadow-md"
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={photo.signed_url}
+                                alt="Damage"
+                                className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                              />
+                            </a>
+                          )
+                        })}
                         </div>
                       </div>
                     )}

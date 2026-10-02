@@ -63,8 +63,25 @@ export default async function ConditionReportPage({
     .eq('type', reportType)
     .order('created_at', { ascending: false })
 
-  const isPickup = reportType === 'pickup'
+  const reportsWithUrls = await Promise.all(
+    (reports ?? []).map(async (report) => ({
+      ...report,
+      condition_report_photos: await Promise.all(
+        (report.condition_report_photos ?? []).map(async (photo) => {
+          const { data } = await supabase.storage
+            .from('condition-photos')
+            .createSignedUrl(photo.storage_path, 3600)
 
+          return {
+            ...photo,
+            signed_url: data?.signedUrl ?? null,
+          }
+        })
+      ),
+    }))
+  )
+
+  const isPickup = reportType === 'pickup'
   return (
     <main className="min-h-screen bg-[var(--background)]">
       {/* CINEMATIC HEADER */}
@@ -135,7 +152,7 @@ export default async function ConditionReportPage({
             </div>
 
             <div className="space-y-4">
-              {reports.map((r) => (
+              {reportsWithUrls.map((r) => (
                 <div
                   key={r.id}
                   className="overflow-hidden rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent p-6"
@@ -198,19 +215,20 @@ export default async function ConditionReportPage({
                         Photos ({r.condition_report_photos.length})
                       </p>
                       <div className="grid grid-cols-4 gap-2">
-                        {r.condition_report_photos.map((photo: { id: string; storage_path: string }) => {
-                          const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/condition-photos/${photo.storage_path}`
+                        {r.condition_report_photos.map((photo) => {
+                          if (!photo.signed_url) return null
+
                           return (
                             <a
                               key={photo.id}
-                              href={url}
+                              href={photo.signed_url}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="group aspect-square overflow-hidden rounded-xl border border-[var(--border)] transition hover:-translate-y-0.5 hover:border-[var(--accent)]/50 hover:shadow-md"
                             >
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
-                                src={url}
+                                src={photo.signed_url}
                                 alt="Report"
                                 className="h-full w-full object-cover transition-transform group-hover:scale-105"
                               />

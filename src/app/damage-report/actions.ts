@@ -28,11 +28,18 @@ export async function uploadDamagePhoto({
 
   if (error) return { ok: false, error: error.message }
 
-  const { data: urlData } = supabase.storage
+  const { data: signedData, error: signedUrlError } = await supabase.storage
     .from('damage-reports')
-    .getPublicUrl(fileName)
+    .createSignedUrl(fileName, 3600)
 
-  return { ok: true, path: fileName, url: urlData.publicUrl }
+  if (signedUrlError || !signedData?.signedUrl) {
+    return {
+      ok: false,
+      error: signedUrlError?.message ?? 'Failed to create secure photo URL',
+    }
+  }
+
+  return { ok: true, path: fileName, url: signedData.signedUrl }
 }
 
 export async function createDamageReport({
