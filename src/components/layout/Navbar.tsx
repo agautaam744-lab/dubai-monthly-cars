@@ -96,6 +96,7 @@ export default function Navbar() {
     { href: '/condition-report', label: t('navbar.conditionReport') },
     { href: '/damage-report', label: t('navbar.damageReport') },
     { href: '/watchlist', label: t('navbar.watchlist') },
+    { href: '/reviews', label: 'Reviews' },
     { href: '/support', label: t('navbar.support') },
   ]
 
