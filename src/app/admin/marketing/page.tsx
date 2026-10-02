@@ -1,6 +1,7 @@
-﻿import { requireAdmin } from '@/lib/admin'
+import { requireAdmin } from '@/lib/admin'
 import { Megaphone, Users, Gift, TrendingUp } from 'lucide-react'
 import BroadcastForm from './BroadcastForm'
+import ReferralSettingsForm from './ReferralSettingsForm'
 import type { NotificationRow } from '@/types/database'
 
 export default async function AdminMarketingPage() {
@@ -23,6 +24,13 @@ export default async function AdminMarketingPage() {
     .from('profiles')
     .select('id', { count: 'exact', head: true })
     .eq('role', 'customer')
+
+  // Referral settings
+  const { data: referralSettings } = await supabase
+    .from('referral_settings')
+    .select('id, is_active, reward_amount_aed, referrer_bonus_aed, min_booking_amount_aed, max_referrals_per_user, updated_at')
+    .limit(1)
+    .maybeSingle()
 
   // Real notification counts (all-time, not just the last 10 shown below)
   const { count: totalNotifications } = await supabase
@@ -57,6 +65,22 @@ export default async function AdminMarketingPage() {
       </div>
 
       <BroadcastForm />
+            {/* REFERRAL SETTINGS */}
+      <div className="mb-8 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
+        <div className="mb-5 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent)]/10">
+            <Gift className="h-5 w-5 text-[var(--accent)]" />
+          </div>
+          <div>
+            <h2 className="font-serif text-lg tracking-tight">Referral Program Settings</h2>
+            <p className="text-xs text-[var(--muted-foreground)]">
+              Configure rewards, limits, and program status
+            </p>
+          </div>
+        </div>
+        <ReferralSettingsForm settings={referralSettings ?? null} />
+      </div>
+
 
       <div className="mb-8 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:p-6">
         <div className="flex items-center gap-2">
