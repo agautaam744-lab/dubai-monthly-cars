@@ -1,4 +1,4 @@
-﻿export type Language = 'en' | 'ar'
+export type Language = 'en' | 'ar'
 
 export const translations: Record<Language, Record<string, string>> = {
   en: {
@@ -15,6 +15,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'navbar.browseCars': 'Browse Cars',
     'navbar.howItWorks': 'How It Works',
     'navbar.support': 'Support',
+    'roadside.request': 'Request Roadside Help',
+    'roadside.call': 'Call Support',
     'navbar.myBookings': 'My Bookings',
     'navbar.watchlist': 'Watchlist',
     'navbar.conditionReport': 'Condition',
@@ -125,6 +127,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'navbar.browseCars': 'تصفح السيارات',
     'navbar.howItWorks': 'كيف يعمل',
     'navbar.support': 'الدعم',
+    'roadside.request': 'طلب مساعدة على الطريق',
+    'roadside.call': 'اتصل بالدعم',
     'navbar.myBookings': 'حجوزاتي',
     'navbar.watchlist': 'المفضلة',
     'navbar.conditionReport': 'الحالة',
