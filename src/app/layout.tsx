@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import './globals-cinematic.css'
 import { ThemeProvider } from '@/components/shared/ThemeProvider'
 import { LanguageProvider } from '@/contexts/LanguageContext'
 import ServiceWorkerRegister from '@/components/shared/ServiceWorkerRegister'
