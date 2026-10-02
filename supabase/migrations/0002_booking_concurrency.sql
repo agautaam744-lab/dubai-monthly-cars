@@ -1,4 +1,4 @@
-﻿-- ============================================================
+-- ============================================================
 -- Dubai Monthly Cars
 -- Booking Concurrency Protection
 -- ============================================================
@@ -11,7 +11,7 @@ alter table public.bookings
   add column if not exists active_booking_period daterange
   generated always as (
     case
-      when status::text not in (
+      when status not in (
         'cancelled',
         'completed',
         'terminated'
