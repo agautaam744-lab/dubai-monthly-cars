@@ -1,17 +1,17 @@
-'use client'
+"use client";
 
-import { Printer } from 'lucide-react'
+import { FileText } from "lucide-react";
 
 export default function InvoiceButton({ paymentId }: { paymentId: string }) {
   return (
-    <button
-      type="button"
-      onClick={() => window.print()}
-      title={`Invoice ${paymentId.slice(0, 8).toUpperCase()}`}
-      className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-[var(--border)] px-3 text-xs font-semibold transition hover:bg-[var(--muted)] print:hidden"
+    <a
+      href={`/api/payments/${paymentId}/invoice`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--card)] px-3 text-xs font-semibold text-[var(--foreground)] transition hover:border-[var(--accent)]/50 hover:text-[var(--accent)]"
     >
-      <Printer className="h-3.5 w-3.5" />
+      <FileText className="h-3.5 w-3.5" aria-hidden="true" />
       Invoice
-    </button>
-  )
+    </a>
+  );
 }
