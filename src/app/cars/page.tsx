@@ -1,6 +1,8 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import { Search, MapPin, CarFront, RotateCcw, TriangleAlert } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import { getServerTranslation } from '@/lib/getServerLang'
+import Navbar from '@/components/layout/Navbar'
 import VehicleCard, {
   getStartingPrice,
   type CarsVehicle,
@@ -42,6 +44,7 @@ export default async function CarsPage({
   searchParams: Promise<SearchParams>
 }) {
   const params = await searchParams
+  const { t } = await getServerTranslation()
 
   const values = {
     q: getValue(params.q).trim(),
@@ -103,6 +106,7 @@ export default async function CarsPage({
   if (error) {
     return (
       <main className="min-h-screen bg-[var(--background)]">
+        <Navbar />
         <div className="mx-auto max-w-3xl px-4 py-24 text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[var(--danger)]/20 to-[var(--danger)]/5 ring-1 ring-inset ring-[var(--danger)]/20">
             <TriangleAlert
@@ -110,23 +114,22 @@ export default async function CarsPage({
               aria-hidden="true"
             />
           </div>
-          <h1 className="mt-6 text-2xl font-bold">Unable to load cars right now</h1>
+          <h1 className="mt-6 text-2xl font-bold">{t('cars.unableTitle')}</h1>
           <p className="mx-auto mt-3 max-w-md text-[var(--muted-foreground)]">
-            Something went wrong while fetching the fleet. Please try again in
-            a moment.
+            {t('cars.unableBody')}
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               href="/cars"
               className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-[var(--accent)] px-6 text-sm font-semibold text-[var(--accent-foreground)] transition hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
             >
-              Try Again
+              {t('cars.tryAgain')}
             </Link>
             <Link
               href="/"
               className="inline-flex min-h-[48px] items-center justify-center rounded-xl border border-[var(--border)] px-6 text-sm font-semibold transition hover:bg-[var(--muted)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
             >
-              Back to Home
+              {t('cars.backHome')}
             </Link>
           </div>
         </div>
@@ -255,6 +258,7 @@ export default async function CarsPage({
 
   return (
     <main className="min-h-screen bg-[var(--background)]">
+      <Navbar />
       {/* HEADER */}
       <section className="relative overflow-hidden border-b border-[var(--border)] bg-[var(--muted)]">
         <div
@@ -263,15 +267,15 @@ export default async function CarsPage({
         />
         <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
-            Dubai Monthly Fleet
+            {t('cars.tagline')}
           </p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
-            Find your perfect monthly car
+            {t('cars.title')}
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--muted-foreground)] sm:text-base">
-            Transparent monthly pricing in AED — no daily rates, no hidden
-            fees. {allVehicles.length} car{allVehicles.length === 1 ? '' : 's'}{' '}
-            ready to rent.
+            {t('cars.subtitle')} {allVehicles.length}{' '}
+            {allVehicles.length === 1 ? t('cars.car') : t('cars.carsPlural')}{' '}
+            {t('cars.readyToRent')}.
           </p>
 
           <form
@@ -279,7 +283,6 @@ export default async function CarsPage({
             role="search"
             className="mt-5 flex max-w-xl gap-2"
           >
-            {/* Preserve the rest of the state across searches */}
             {values.category && (
               <input type="hidden" name="category" value={values.category} />
             )}
@@ -302,7 +305,7 @@ export default async function CarsPage({
               <input type="hidden" name="location" value={values.location} />
             )}
             <label htmlFor="cars-search" className="sr-only">
-              Search by make, model or category
+              {t('cars.searchPlaceholder')}
             </label>
             <div className="relative flex-1">
               <Search
@@ -314,7 +317,7 @@ export default async function CarsPage({
                 type="search"
                 name="q"
                 defaultValue={values.q}
-                placeholder="Search make, model or category…"
+                placeholder={t('cars.searchPlaceholder')}
                 autoComplete="off"
                 className="min-h-[52px] w-full rounded-2xl border border-[var(--border)] bg-[var(--card)] ps-11 pe-4 text-sm shadow-sm outline-none transition focus:border-[var(--accent)]/60 focus:ring-2 focus:ring-[var(--ring)]"
               />
@@ -323,7 +326,7 @@ export default async function CarsPage({
               type="submit"
               className="inline-flex min-h-[52px] shrink-0 items-center justify-center rounded-2xl bg-[var(--accent)] px-6 text-sm font-semibold text-[var(--accent-foreground)] shadow-sm transition hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] active:scale-[0.98]"
             >
-              Search
+              {t('cars.search')}
             </button>
           </form>
         </div>
@@ -347,7 +350,7 @@ export default async function CarsPage({
                       : 'border-[var(--border)] bg-[var(--card)] hover:border-[var(--accent)]/50'
                   }`}
                 >
-                  All Cars
+                  {t('cars.allCars')}
                 </Link>
               </li>
               {categories.map((category) => {
@@ -382,7 +385,7 @@ export default async function CarsPage({
             className="hidden h-fit rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 lg:block lg:sticky lg:top-24"
           >
             <div className="mb-5 flex items-center justify-between">
-              <h2 className="font-semibold">Filters</h2>
+              <h2 className="font-semibold">{t('cars.filtersHeading')}</h2>
               {activeFilterCount > 0 && (
                 <span
                   aria-label={`${activeFilterCount} filters active`}
@@ -430,7 +433,8 @@ export default async function CarsPage({
                 <span className="text-base font-bold text-[var(--foreground)]">
                   {vehicles.length}
                 </span>{' '}
-                car{vehicles.length === 1 ? '' : 's'} available
+                {vehicles.length === 1 ? t('cars.car') : t('cars.carsPlural')}{' '}
+                {t('cars.available')}
                 {activeFilterCount > 0 && (
                   <>
                     {' '}·{' '}
@@ -438,7 +442,8 @@ export default async function CarsPage({
                       href="/cars"
                       className="font-medium text-[var(--accent)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] rounded"
                     >
-                      Clear {activeFilterCount} filter{activeFilterCount === 1 ? '' : 's'}
+                      {t('cars.clear')} {activeFilterCount}{' '}
+                      {activeFilterCount === 1 ? t('cars.filter') : t('cars.filters')}
                     </Link>
                   </>
                 )}
@@ -446,7 +451,7 @@ export default async function CarsPage({
 
               <div className="hidden items-center gap-2 text-sm text-[var(--muted-foreground)] lg:flex">
                 <MapPin className="h-4 w-4" aria-hidden="true" />
-                Dubai
+                {t('cars.dubai')}
               </div>
 
               <div className="hidden lg:block lg:w-56">
@@ -463,19 +468,17 @@ export default async function CarsPage({
                   />
                 </div>
                 <h2 className="mt-5 text-xl font-semibold">
-                  No cars match your filters
+                  {t('cars.noMatchTitle')}
                 </h2>
                 <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[var(--muted-foreground)]">
-                  {values.q
-                    ? `Nothing found for “${values.q}”. Try a different search or clear your filters to see the full fleet.`
-                    : 'Try changing your filters or reset them to see the full available fleet.'}
+                  {values.q ? t('cars.noMatchQuery') : t('cars.noMatchBody')}
                 </p>
                 <Link
                   href="/cars"
                   className="mt-6 inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-6 text-sm font-semibold text-[var(--accent-foreground)] transition hover:bg-[var(--accent-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]"
                 >
                   <RotateCcw className="h-4 w-4" aria-hidden="true" />
-                  Clear Filters
+                  {t('cars.clearFilters')}
                 </Link>
               </div>
             ) : (

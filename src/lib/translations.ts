@@ -2,7 +2,6 @@
 
 export const translations: Record<Language, Record<string, string>> = {
   en: {
-    // Nav
     'nav.home': 'Home',
     'nav.cars': 'Cars',
     'nav.bookings': 'My Bookings',
@@ -13,7 +12,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'nav.logout': 'Logout',
     'nav.admin': 'Admin',
 
-    // Navbar (top nav bar component)
     'navbar.browseCars': 'Browse Cars',
     'navbar.howItWorks': 'How It Works',
     'navbar.support': 'Support',
@@ -34,11 +32,9 @@ export const translations: Record<Language, Record<string, string>> = {
     'navbar.lightMode': 'Light Mode',
     'navbar.darkMode': 'Dark Mode',
 
-    // Hero
     'hero.title1': 'Your Car, Every Month',
     'hero.title2': 'No Strings Attached',
-    'hero.subtitle':
-      'Flexible 1, 3, 6 or 12 month plans. Home delivery across Dubai. No long-term commitment, no hidden fees.',
+    'hero.subtitle': 'Flexible 1, 3, 6 or 12 month plans. Home delivery across Dubai. No long-term commitment, no hidden fees.',
     'hero.browse': 'Browse Fleet',
     'hero.howItWorks': 'How It Works',
     'hero.pickupCity': 'Pick-up city',
@@ -54,13 +50,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'hero.cityAirport': 'Dubai Airport (DXB)',
     'hero.cityBusinessBay': 'Business Bay',
 
-    // Home
     'home.hero.title': 'Monthly Car Rental in Dubai',
     'home.hero.subtitle': 'Subscribe to a car for a month. No daily rates. No hassle.',
     'home.cta.browse': 'Browse Cars',
     'home.cta.learn': 'Learn More',
 
-    // Filters
     'filters.category': 'Category',
     'filters.brand': 'Brand',
     'filters.transmission': 'Transmission',
@@ -71,7 +65,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'filters.apply': 'Apply',
     'filters.reset': 'Reset',
 
-    // Booking
     'booking.duration': 'Rental Duration',
     'booking.tier': 'Pricing Tier',
     'booking.addons': 'Add-ons',
@@ -82,7 +75,30 @@ export const translations: Record<Language, Record<string, string>> = {
     'booking.month': 'month',
     'booking.months': 'months',
 
-    // Common
+    'cars.tagline': 'Dubai Monthly Fleet',
+    'cars.title': 'Find your perfect monthly car',
+    'cars.subtitle': 'Transparent monthly pricing in AED — no daily rates, no hidden fees.',
+    'cars.readyToRent': 'ready to rent',
+    'cars.searchPlaceholder': 'Search make, model or category…',
+    'cars.search': 'Search',
+    'cars.allCars': 'All Cars',
+    'cars.filtersHeading': 'Filters',
+    'cars.available': 'available',
+    'cars.clear': 'Clear',
+    'cars.filter': 'filter',
+    'cars.filters': 'filters',
+    'cars.dubai': 'Dubai',
+    'cars.noMatchTitle': 'No cars match your filters',
+    'cars.noMatchBody': 'Try changing your filters or reset them to see the full available fleet.',
+    'cars.noMatchQuery': 'Nothing found for your search. Try a different search or clear your filters to see the full fleet.',
+    'cars.clearFilters': 'Clear Filters',
+    'cars.unableTitle': 'Unable to load cars right now',
+    'cars.unableBody': 'Something went wrong while fetching the fleet. Please try again in a moment.',
+    'cars.tryAgain': 'Try Again',
+    'cars.backHome': 'Back to Home',
+    'cars.car': 'car',
+    'cars.carsPlural': 'cars',
+
     'common.loading': 'Loading...',
     'common.save': 'Save',
     'common.cancel': 'Cancel',
@@ -94,44 +110,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'common.light': 'Light',
     'common.dark': 'Dark',
     'common.system': 'System',
-
-    // Subscription management
-    'sub.title': 'Manage Subscription',
-    'sub.autoRenew': 'Monthly auto-renewal',
-    'sub.autoRenewOn': 'On — rental continues automatically with monthly billing.',
-    'sub.autoRenewOff': 'Off — rental ends after the current period.',
-    'sub.turnOn': 'Turn on',
-    'sub.turnOff': 'Turn off',
-    'sub.extend': 'Extend',
-    'sub.endEarly': 'End early',
-    'sub.swap': 'Swap car',
-    'sub.sendRequest': 'Send request',
-    'sub.requestSent': 'Request sent. Our team will review it under Support tickets.',
-    'sub.extendPh': 'How many extra months? E.g. extend by 3 months from current end date.',
-    'sub.endPh': 'Reason and preferred end date.',
-    'sub.swapPh': 'Which car would you like instead? Upgrades may change the monthly price.',
-
-    // Roadside
-    'roadside.request': 'Request roadside assistance',
-    'roadside.call': '800-0000 (24/7)',
-    'roadside.done': 'Assistance requested — we will call you back immediately.',
-    'roadside.confirm': 'Request roadside assistance now? This opens an URGENT ticket.',
-
-    // Wallet / trips
-    'wallet.title': 'Wallet Balance',
-    'wallet.desc': 'Refunds, referral payouts and promo credits land here.',
-    'trips.title': 'Trip & Mileage History',
-    'trips.empty': 'No mileage logs yet. Odometer readings from pickup and return condition reports appear here.',
-
-    // Availability / fuel
-    'avail.title': 'Availability — next 60 days',
-    'avail.free': 'Free all 60 days',
-    'avail.available': 'Available',
-    'avail.booked': 'Booked',
-    'fuel.title': 'Fuel policy',
   },
   ar: {
-    // Nav
     'nav.home': 'الرئيسية',
     'nav.cars': 'السيارات',
     'nav.bookings': 'حجوزاتي',
@@ -142,7 +122,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'nav.logout': 'تسجيل الخروج',
     'nav.admin': 'المشرف',
 
-    // Navbar (top nav bar component)
     'navbar.browseCars': 'تصفح السيارات',
     'navbar.howItWorks': 'كيف يعمل',
     'navbar.support': 'الدعم',
@@ -163,11 +142,9 @@ export const translations: Record<Language, Record<string, string>> = {
     'navbar.lightMode': 'الوضع المضيء',
     'navbar.darkMode': 'الوضع المظلم',
 
-    // Hero
     'hero.title1': 'سيارتك، كل شهر',
     'hero.title2': 'بدون أي التزامات',
-    'hero.subtitle':
-      'خطط مرنة لمدة شهر أو 3 أو 6 أو 12 شهراً. توصيل مجاني إلى المنزل في جميع أنحاء دبي. بدون التزام طويل الأمد، وبدون رسوم خفية.',
+    'hero.subtitle': 'خطط مرنة لمدة شهر أو 3 أو 6 أو 12 شهراً. توصيل مجاني إلى المنزل في جميع أنحاء دبي. بدون التزام طويل الأمد، وبدون رسوم خفية.',
     'hero.browse': 'تصفح الأسطول',
     'hero.howItWorks': 'كيف يعمل',
     'hero.pickupCity': 'مدينة الاستلام',
@@ -183,13 +160,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'hero.cityAirport': 'مطار دبي (DXB)',
     'hero.cityBusinessBay': 'الخليج التجاري',
 
-    // Home
     'home.hero.title': 'تأجير السيارات الشهري في دبي',
     'home.hero.subtitle': 'اشترك في سيارة لمدة شهر. بدون أسعار يومية. بدون متاعب.',
     'home.cta.browse': 'تصفح السيارات',
     'home.cta.learn': 'اعرف المزيد',
 
-    // Filters
     'filters.category': 'الفئة',
     'filters.brand': 'الماركة',
     'filters.transmission': 'ناقل الحركة',
@@ -200,7 +175,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'filters.apply': 'تطبيق',
     'filters.reset': 'إعادة تعيين',
 
-    // Booking
     'booking.duration': 'مدة الإيجار',
     'booking.tier': 'فئة التسعير',
     'booking.addons': 'إضافات',
@@ -211,7 +185,30 @@ export const translations: Record<Language, Record<string, string>> = {
     'booking.month': 'شهر',
     'booking.months': 'أشهر',
 
-    // Common
+    'cars.tagline': 'أسطول دبي الشهري',
+    'cars.title': 'اعثر على سيارتك الشهرية المثالية',
+    'cars.subtitle': 'أسعار شهرية شفافة بالدرهم الإماراتي — بدون أسعار يومية، وبدون رسوم خفية.',
+    'cars.readyToRent': 'جاهزة للإيجار',
+    'cars.searchPlaceholder': 'ابحث حسب الماركة أو الموديل أو الفئة…',
+    'cars.search': 'بحث',
+    'cars.allCars': 'كل السيارات',
+    'cars.filtersHeading': 'الفلاتر',
+    'cars.available': 'متاحة',
+    'cars.clear': 'مسح',
+    'cars.filter': 'فلتر',
+    'cars.filters': 'فلاتر',
+    'cars.dubai': 'دبي',
+    'cars.noMatchTitle': 'لا توجد سيارات مطابقة لفلاترك',
+    'cars.noMatchBody': 'حاول تغيير الفلاتر أو إعادة تعيينها لرؤية الأسطول الكامل المتاح.',
+    'cars.noMatchQuery': 'لم يتم العثور على نتائج. جرّب بحثاً مختلفاً أو امسح الفلاتر لرؤية الأسطول الكامل.',
+    'cars.clearFilters': 'مسح الفلاتر',
+    'cars.unableTitle': 'تعذر تحميل السيارات الآن',
+    'cars.unableBody': 'حدث خطأ أثناء جلب الأسطول. يرجى المحاولة مرة أخرى بعد قليل.',
+    'cars.tryAgain': 'حاول مرة أخرى',
+    'cars.backHome': 'العودة للرئيسية',
+    'cars.car': 'سيارة',
+    'cars.carsPlural': 'سيارات',
+
     'common.loading': 'جاري التحميل...',
     'common.save': 'حفظ',
     'common.cancel': 'إلغاء',
@@ -223,40 +220,5 @@ export const translations: Record<Language, Record<string, string>> = {
     'common.light': 'فاتح',
     'common.dark': 'داكن',
     'common.system': 'النظام',
-
-    // Subscription management
-    'sub.title': 'إدارة الاشتراك',
-    'sub.autoRenew': 'التجديد الشهري التلقائي',
-    'sub.autoRenewOn': 'مفعّل — يستمر الإيجار تلقائياً مع الفوترة الشهرية.',
-    'sub.autoRenewOff': 'متوقف — ينتهي الإيجار بعد الفترة الحالية.',
-    'sub.turnOn': 'تفعيل',
-    'sub.turnOff': 'إيقاف',
-    'sub.extend': 'تمديد',
-    'sub.endEarly': 'إنهاء مبكر',
-    'sub.swap': 'استبدال السيارة',
-    'sub.sendRequest': 'إرسال الطلب',
-    'sub.requestSent': 'تم إرسال الطلب. سيراجعه فريقنا ضمن تذاكر الدعم.',
-    'sub.extendPh': 'كم شهراً إضافياً؟ مثال: التمديد 3 أشهر من تاريخ النهاية الحالي.',
-    'sub.endPh': 'السبب وتاريخ النهاية المفضل.',
-    'sub.swapPh': 'أي سيارة تريد بدلاً منها؟ قد تغيّر الترقية السعر الشهري.',
-
-    // Roadside
-    'roadside.request': 'طلب المساعدة على الطريق',
-    'roadside.call': '800-0000 (24/7)',
-    'roadside.done': 'تم طلب المساعدة — سنتصل بك فوراً.',
-    'roadside.confirm': 'طلب المساعدة على الطريق الآن؟ سيؤدي هذا إلى فتح تذكرة عاجلة.',
-
-    // Wallet / trips
-    'wallet.title': 'رصيد المحفظة',
-    'wallet.desc': 'تصل المبالغ المستردة ومكافآت الإحالة وأرصدة العروض إلى هنا.',
-    'trips.title': 'سجل الرحلات والمسافة',
-    'trips.empty': 'لا توجد سجلات مسافة بعد. تظهر قراءات العداد من تقارير الحالة هنا.',
-
-    // Availability / fuel
-    'avail.title': 'التوفر — 60 يوماً القادمة',
-    'avail.free': 'متاح طوال الـ 60 يوماً',
-    'avail.available': 'متاح',
-    'avail.booked': 'محجوز',
-    'fuel.title': 'سياسة الوقود',
   },
 }
