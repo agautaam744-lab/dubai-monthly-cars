@@ -13,6 +13,7 @@ import StatusDonut from './StatusDonut'
 import TypeBreakdown from './TypeBreakdown'
 import TopCustomers from './TopCustomers'
 import PromoManager from './PromoManager'
+import VatExportButton from './VatExportButton'
 
 function formatAED(value: number) {
   return new Intl.NumberFormat('en-AE', {
@@ -228,6 +229,9 @@ export default async function AdminFinancePage() {
         <p className="mt-2 text-sm text-[var(--muted-foreground)]">
           Revenue analytics, trends, and insights.
         </p>
+        <div className="mt-5">
+          <VatExportButton />
+        </div>
       </div>
 
       {/* Stats Grid */}
