@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 type ActionResult = { ok: boolean; error?: string }
 
@@ -55,13 +56,14 @@ export async function createChangeRequest({
 
   if (error) return { ok: false, error: error.message }
 
-  const { data: admins } = await supabase
+  const adminDb = createAdminClient()
+  const { data: admins } = await adminDb
     .from('profiles')
     .select('id')
     .in('role', ['super_admin', 'fleet_manager', 'support'])
 
   for (const admin of admins ?? []) {
-    await supabase.from('notifications').insert({
+    await adminDb.from('notifications').insert({
       user_id: admin.id,
       title: `New ${changeType} request`,
       body: `A customer requested a ${changeType}. Review and approve.`,
