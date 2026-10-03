@@ -1,8 +1,6 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { SupabaseClient } from '@supabase/supabase-js'
-import { Database } from '@/types/database'
 import { revalidatePath } from 'next/cache'
 
 type PaymentResult = 
@@ -198,119 +196,6 @@ async function createTabbySession(data: {
     url,
     sessionId: tabbyResponse.id
   }
-}
-
-export async function handlePaymentWebhook(
-  provider: 'stripe' | 'tabby',
-  request: Request
-): Promise<{ ok: boolean; error?: string }> {
-  const supabase = await createClient()
-
-  try {
-    if (provider === 'stripe') {
-      return await handleStripeWebhook(await createClient(), request)
-    } else if (provider === 'tabby') {
-      return await handleTabbyWebhook(await createClient(), request)
-    }
-    return { ok: false, error: 'Unknown provider' }
-  } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : 'Webhook processing failed' }
-  }
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handleStripeWebhook(supabase: any, request: Request): Promise<{ ok: boolean; error?: string }> {
-  const stripe = await getStripeClient()
-  const body = await request.text()
-  const signature = request.headers.get('stripe-signature')
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
-
-  if (!webhookSecret || !signature) {
-    return { ok: false, error: 'STRIPE_WEBHOOK_SECRET or signature not configured' }
-  }
-
-  let event
-  try {
-    event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
-  } catch {
-    return { ok: false, error: 'Webhook signature verification failed' }
-  }
-
-  if (event.type === 'payment_intent.succeeded') {
-    const paymentIntent = event.data.object
-    const bookingId = paymentIntent.metadata?.booking_id
-
-    if (bookingId) {
-      const amount = paymentIntent.amount / 100 // Convert from fils to AED
-      
-      await supabase.from('payments').insert({
-        booking_id: bookingId,
-        amount_aed: amount,
-        type: 'monthly_rental',
-        status: 'succeeded',
-        provider: 'stripe',
-        provider_payment_id: paymentIntent.id,
-        paid_at: new Date().toISOString()
-      })
-
-      await supabase
-        .from('bookings')
-        .update({ status: 'active', updated_at: new Date().toISOString() })
-        .eq('id', bookingId)
-
-      // Schedule next month payment for multi-month bookings
-      const { data: booking } = await supabase
-        .from('bookings')
-        .select('duration_months')
-        .eq('id', bookingId)
-        .single()
-
-      if (booking && (booking.duration_months || 1) > 1) {
-        const nextDue = new Date()
-        nextDue.setMonth(nextDue.getMonth() + 1)
-        await supabase.from('payments').insert({
-          booking_id: bookingId,
-          amount_aed: Number(paymentIntent.metadata?.monthly_amount || 0),
-          type: 'monthly_rental',
-          status: 'pending',
-          provider: 'stripe',
-          provider_payment_id: `stripe_sched_${Date.now()}`,
-          due_date: nextDue.toISOString().slice(0, 10)
-        })
-      }
-    }
-  }
-
-  return { ok: true }
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function handleTabbyWebhook(supabase: any, request: Request): Promise<{ ok: boolean; error?: string }> {
-  const body = await request.json()
-  
-  if (body.event === 'payment.captured') {
-    const payment = body.payment
-    const bookingId = payment.order?.reference_id
-
-    if (bookingId) {
-      await supabase.from('payments').insert({
-        booking_id: bookingId,
-        amount_aed: payment.amount,
-        type: 'monthly_rental',
-        status: 'succeeded',
-        provider: 'tabby',
-        provider_payment_id: payment.id,
-        paid_at: new Date().toISOString()
-      })
-
-      await supabase
-        .from('bookings')
-        .update({ status: 'active', updated_at: new Date().toISOString() })
-        .eq('id', bookingId)
-    }
-  }
-
-  return { ok: true }
 }
 
 export async function refundPayment(paymentId: string): Promise<{ ok: boolean; error?: string }> {
