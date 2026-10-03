@@ -1,4 +1,4 @@
-﻿export const USER_ROLES = [
+export const USER_ROLES = [
   'customer',
   'super_admin',
   'fleet_manager',
@@ -13,7 +13,7 @@ export type StaffRole = Exclude<UserRole, 'customer'>
 
 export type VehicleStatus = 'available' | 'rented' | 'maintenance' | 'out_of_service'
 
-export type BookingStatus = 'pending_kyc' | 'pending_payment' | 'active' | 'completed' | 'cancelled' | 'terminated'
+export type BookingStatus = 'pending_kyc' | 'pending_payment' | 'active' | 'completed' | 'cancelled' | 'terminated' | 'pending_agreement'
 
 export type DocumentStatus = 'pending' | 'approved' | 'rejected'
 
@@ -184,7 +184,7 @@ export interface Database {
           total_add_ons_aed: number | string
           delivery_type: 'pickup' | 'home_delivery'
           delivery_address: string | null
-          status: 'pending_kyc' | 'pending_payment' | 'active' | 'completed' | 'cancelled' | 'terminated'
+          status: 'pending_kyc' | 'pending_payment' | 'active' | 'completed' | 'cancelled' | 'terminated' | 'pending_agreement'
           agreement_signed_at: string | null
           agreement_pdf_path: string | null
           created_at: string
@@ -431,10 +431,12 @@ export interface Database {
         Row: {
           id: string
           code: string
-          discount_percent: number
+          discount_type: 'percentage' | 'fixed'
+          discount_value: number
+          valid_from: string | null
+          valid_until: string | null
           max_uses: number | null
           used_count: number
-          expires_at: string | null
           is_active: boolean
           created_at: string
         }
@@ -450,11 +452,11 @@ export interface Database {
     }
     Enums: {
       vehicle_status: 'available' | 'rented' | 'maintenance' | 'out_of_service'
-      booking_status: 'pending_kyc' | 'pending_payment' | 'active' | 'completed' | 'cancelled' | 'terminated'
+      booking_status: 'pending_kyc' | 'pending_payment' | 'active' | 'completed' | 'cancelled' | 'terminated' | 'pending_agreement'
       document_status: 'pending' | 'approved' | 'rejected'
       payment_status: 'pending' | 'succeeded' | 'failed' | 'refunded'
       document_type: 'emirates_id' | 'driving_license' | 'passport'
-      payment_type: 'deposit' | 'monthly_rental' | 'add_on' | 'refund' | 'damage_charge'
+      payment_type: 'deposit' | 'monthly_rental' | 'monthly_rent' | 'add_on' | 'refund' | 'damage' | 'penalty'
       promo_code_type: 'percentage' | 'fixed'
     }
   }
