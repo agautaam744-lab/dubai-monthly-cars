@@ -2,10 +2,12 @@
 
 export const STAFF_ROLES = [
   'super_admin',
+  'admin',
   'fleet_manager',
   'finance',
   'support',
   'delivery',
+  'delivery_staff',
 ] as const satisfies readonly StaffRole[]
 
 export type AdminRole = (typeof STAFF_ROLES)[number]

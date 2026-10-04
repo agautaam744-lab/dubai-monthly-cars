@@ -1,10 +1,12 @@
 export const USER_ROLES = [
   'customer',
   'super_admin',
+  'admin',
   'fleet_manager',
   'finance',
   'support',
   'delivery',
+  'delivery_staff',
 ] as const
 
 export type UserRole = (typeof USER_ROLES)[number]
