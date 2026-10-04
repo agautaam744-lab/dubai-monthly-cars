@@ -1,7 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { loadStripe } from '@stripe/stripe-js'
+import {
+  PaymentElement,
+  Elements,
+  useStripe,
+  useElements,
+} from '@stripe/react-stripe-js'
 import {
   Car,
   CreditCard,
@@ -13,7 +20,7 @@ import {
   Loader2,
   CheckCircle2,
 } from 'lucide-react'
-import { completeMockPayment } from './actions'
+import { completePayment } from './actions'
 
 type AddOn = {
   id: string
@@ -80,6 +87,87 @@ const paymentMethods = [
 
 type MethodId = (typeof paymentMethods)[number]['id']
 
+// Stripe promise - load once
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
+)
+
+function CardForm({
+  onComplete,
+  onError,
+}: {
+  onComplete: () => void
+  onError: (error: string) => void
+}) {
+  const stripe = useStripe()
+  const elements = useElements()
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault()
+
+    if (!stripe || !elements) {
+      onError('Stripe not loaded. Please refresh and try again.')
+      return
+    }
+
+    const { error } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${window.location.origin}/bookings?paid=success`,
+      },
+    })
+
+    if (error) {
+      onError(error.message || 'Payment failed. Please try again.')
+    } else {
+      onComplete()
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6">
+      <div>
+        <label className="mb-2 block text-sm font-medium">
+          Cardholder name
+        </label>
+        <input
+          type="text"
+          placeholder="John Doe"
+          className="w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 py-3 text-sm outline-none transition focus:border-[var(--accent)]/60 focus:ring-2 focus:ring-[var(--ring)]"
+        />
+      </div>
+
+      <div>
+        <label className="mb-2 block text-sm font-medium">
+          Card details
+        </label>
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--background)] p-3">
+          <PaymentElement />
+        </div>
+      </div>
+
+      <div className="flex items-start gap-3 rounded-xl border border-[var(--border)] bg-[var(--muted)]/50 p-3">
+        <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--muted-foreground)]" aria-hidden="true" />
+        <p className="text-xs leading-5 text-[var(--muted-foreground)]">
+          Your payment is encrypted and processed securely via Stripe.
+        </p>
+      </div>
+
+      <button
+        type="submit"
+        disabled={!stripe}
+        className="group flex min-h-[54px] w-full items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-6 text-sm font-bold text-white shadow-lg shadow-[var(--accent)]/20 transition-all hover:-translate-y-0.5 hover:bg-[var(--accent-hover)] hover:shadow-xl hover:shadow-[var(--accent)]/30 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+      >
+        <span>Pay</span>
+        <ChevronRight
+          className="h-4 w-4 transition-transform group-hover:translate-x-0.5 rtl:rotate-180 rtl:group-hover:-translate-x-0.5"
+          aria-hidden="true"
+        />
+      </button>
+    </form>
+  )
+}
+
 export default function PaymentForm({ booking, addOns }: Props) {
   const router = useRouter()
 
@@ -94,32 +182,74 @@ export default function PaymentForm({ booking, addOns }: Props) {
   const [method, setMethod] = useState<MethodId>('card')
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [clientSecret, setClientSecret] = useState<string | null>(null)
+  const [stripeLoaded, setStripeLoaded] = useState(false)
 
   const monthlyRent = Number(booking.monthly_price_aed || 0)
   const deposit = Number(booking.deposit_aed || 0)
   const addOnTotal = Number(booking.total_add_ons_aed || 0)
   const total = monthlyRent + deposit + addOnTotal
 
-  const handlePay = async () => {
+  // Load Stripe on mount
+  useEffect(() => {
+    stripePromise.then((stripe) => {
+      if (stripe) {
+        setStripeLoaded(true)
+      } else {
+        setErrorMessage('Failed to load payment system. Please refresh.')
+      }
+    })
+  }, [])
+
+  // Fetch client secret when payment method is card
+  const fetchClientSecret = useCallback(async () => {
+    if (clientSecret) return
+
     setSubmitting(true)
     setErrorMessage('')
 
     try {
-      const result = await completeMockPayment(booking.id)
+      const result = await completePayment(booking.id, {
+        provider: 'stripe',
+        amountAed: total,
+        returnUrl: `${window.location.origin}/bookings?paid=success`,
+      })
 
       if (!result.ok) {
-        setErrorMessage(result.error ?? 'Payment failed. Please try again.')
+        setErrorMessage(result.error || 'Failed to initialize payment.')
         setSubmitting(false)
         return
       }
 
-      router.push(`/bookings?paid=${booking.id}`)
+      if (result.clientSecret) {
+        setClientSecret(result.clientSecret)
+      } else if (result.url) {
+        // Redirect for redirect-based payments
+        window.location.href = result.url
+        return
+      }
     } catch (err) {
-      setErrorMessage(
-        err instanceof Error ? err.message : 'Unexpected error occurred.'
-      )
+      setErrorMessage(err instanceof Error ? err.message : 'Unexpected error occurred.')
+    } finally {
       setSubmitting(false)
     }
+  }, [booking.id, total, clientSecret])
+
+  // Fetch client secret when user selects card payment
+  useEffect(() => {
+    if (method === 'card' && !clientSecret) {
+      fetchClientSecret()
+    }
+  }, [method, fetchClientSecret, clientSecret])
+
+  const handlePay = async () => {
+    if (method !== 'card') {
+      // For Apple/Google Pay - redirect to Stripe checkout
+      fetchClientSecret()
+      return
+    }
+
+    // Card payment is handled by CardForm submit
   }
 
   if (!vehicle) {
@@ -131,9 +261,6 @@ export default function PaymentForm({ booking, addOns }: Props) {
       </div>
     )
   }
-
-  const inputClass =
-    'w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-4 py-3 text-sm outline-none transition focus:border-[var(--accent)]/60 focus:ring-2 focus:ring-[var(--ring)]'
 
   return (
     <div className="min-h-screen bg-[var(--background)]">
@@ -211,15 +338,19 @@ export default function PaymentForm({ booking, addOns }: Props) {
               {paymentMethods.map((m) => {
                 const Icon = m.icon
                 const selected = method === m.id
+                const disabled = (m.id === 'apple' || m.id === 'google') && !stripeLoaded
                 return (
                   <button
                     key={m.id}
                     type="button"
-                    onClick={() => setMethod(m.id)}
+                    onClick={() => !disabled && setMethod(m.id)}
+                    disabled={disabled}
                     className={[
                       'group/m relative flex min-h-[110px] flex-col items-start justify-between gap-3 rounded-2xl border p-4 text-left transition-all',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)]',
-                      selected
+                      disabled
+                        ? 'opacity-50 cursor-not-allowed border-[var(--border)] bg-[var(--card)]'
+                        : selected
                         ? 'border-[var(--accent)] bg-[var(--accent)]/5 shadow-md shadow-[var(--accent)]/10'
                         : 'border-[var(--border)] bg-[var(--card)] hover:-translate-y-0.5 hover:border-[var(--accent)]/50 hover:shadow-md',
                     ].join(' ')}
@@ -238,82 +369,34 @@ export default function PaymentForm({ booking, addOns }: Props) {
                         {m.tag}
                       </p>
                     </div>
+                    {(m.id === 'apple' || m.id === 'google') && !stripeLoaded && (
+                      <span className="absolute bottom-3 right-3 text-[10px] text-[var(--muted-foreground)]">
+                        Loading...
+                      </span>
+                    )}
                   </button>
                 )
               })}
             </div>
           </div>
 
-          {/* CARD FORM */}
-          {method === 'card' && (
-            <div>
-              <div className="mb-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--accent)]">
-                  Step 2
+          {/* CARD FORM - Stripe Elements */}
+          {method === 'card' && clientSecret && (
+            <Elements stripe={stripePromise} options={{ clientSecret }}>
+              <CardForm
+                onComplete={() => router.push(`/bookings?paid=${booking.id}`)}
+                onError={(error) => setErrorMessage(error)}
+              />
+            </Elements>
+          )}
+
+          {method === 'card' && !clientSecret && (
+            <div className="space-y-4 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6">
+              <div className="flex items-center gap-3 text-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-[var(--accent)] mx-auto" aria-hidden="true" />
+                <p className="text-[var(--muted-foreground)]">
+                  Loading secure payment form...
                 </p>
-                <h2 className="mt-2 font-serif text-2xl tracking-tight">
-                  Card details
-                </h2>
-              </div>
-
-              <div className="space-y-4 rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6">
-                <div>
-                  <label className="mb-2 block text-sm font-medium">
-                    Cardholder name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="John Doe"
-                    className={inputClass}
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium">
-                    Card number
-                  </label>
-                  <div className="relative">
-                    <CreditCard
-                      className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted-foreground)]"
-                      aria-hidden="true"
-                    />
-                    <input
-                      type="text"
-                      placeholder="4242 4242 4242 4242"
-                      className={`${inputClass} pl-11`}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="mb-2 block text-sm font-medium">
-                      Expiry
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="MM / YY"
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-medium">
-                      CVC
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="123"
-                      className={inputClass}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 rounded-xl border border-[var(--border)] bg-[var(--muted)]/50 p-3">
-                  <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--muted-foreground)]" aria-hidden="true" />
-                  <p className="text-xs leading-5 text-[var(--muted-foreground)]">
-                    This is a demo payment form. No real card will be charged.
-                  </p>
-                </div>
               </div>
             </div>
           )}
@@ -321,10 +404,10 @@ export default function PaymentForm({ booking, addOns }: Props) {
           {(method === 'apple' || method === 'google') && (
             <div className="rounded-3xl border border-dashed border-[var(--border)] bg-[var(--muted)]/40 p-8 text-center">
               <p className="font-serif text-lg tracking-tight text-[var(--foreground)]">
-                {method === 'apple' ? 'Apple Pay' : 'Google Pay'} coming soon
+                {method === 'apple' ? 'Apple Pay' : 'Google Pay'}
               </p>
               <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-                For now, please use the Card option to continue.
+                Redirecting to {method === 'apple' ? 'Apple Pay' : 'Google Pay'}...
               </p>
             </div>
           )}
@@ -424,7 +507,7 @@ export default function PaymentForm({ booking, addOns }: Props) {
               <button
                 type="button"
                 onClick={handlePay}
-                disabled={submitting}
+                disabled={submitting || (method === 'card' && !clientSecret)}
                 className="group flex min-h-[54px] w-full items-center justify-center gap-2 rounded-xl bg-[var(--accent)] px-6 text-sm font-bold text-white shadow-lg shadow-[var(--accent)]/20 transition-all hover:-translate-y-0.5 hover:bg-[var(--accent-hover)] hover:shadow-xl hover:shadow-[var(--accent)]/30 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
               >
                 {submitting ? (
@@ -449,7 +532,7 @@ export default function PaymentForm({ booking, addOns }: Props) {
                   aria-hidden="true"
                 />
                 <p className="text-xs leading-5 text-[var(--foreground)]/70">
-                  Your payment is encrypted and processed securely. This is a demo payment for testing.
+                  Your payment is encrypted and processed securely via Stripe.
                 </p>
               </div>
             </div>
