@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/components/shared/ThemeProvider'
 import { LanguageProvider } from '@/contexts/LanguageContext'
 import ServiceWorkerRegister from '@/components/shared/ServiceWorkerRegister'
 import Footer from '@/components/layout/Footer'
+import { getServerTranslation } from '@/lib/getServerLang'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -27,13 +28,16 @@ export const viewport: Viewport = {
   themeColor: '#D4AF37',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const { lang } = await getServerTranslation()
+  const dir = lang === 'ar' ? 'rtl' : 'ltr'
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={lang} dir={dir} suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
         <ServiceWorkerRegister />
         <LanguageProvider>
