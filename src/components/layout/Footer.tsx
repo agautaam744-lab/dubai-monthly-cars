@@ -40,13 +40,13 @@ export default function Footer() {
             </p>
 
             <div className="mt-6 flex gap-3">
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--foreground)]/70 transition hover:-translate-y-0.5 hover:border-[var(--accent)] hover:text-[var(--accent)]">
+              <a href="https://instagram.com/dubaimonthlycars" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--foreground)]/70 transition hover:-translate-y-0.5 hover:border-[var(--accent)] hover:text-[var(--accent)]">
                 <Globe2 className="h-4 w-4" aria-hidden="true" />
               </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--foreground)]/70 transition hover:-translate-y-0.5 hover:border-[var(--accent)] hover:text-[var(--accent)]">
+              <a href="https://twitter.com/dubaimonthlycar" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--foreground)]/70 transition hover:-translate-y-0.5 hover:border-[var(--accent)] hover:text-[var(--accent)]">
                 <Send className="h-4 w-4" aria-hidden="true" />
               </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--foreground)]/70 transition hover:-translate-y-0.5 hover:border-[var(--accent)] hover:text-[var(--accent)]">
+              <a href="https://linkedin.com/company/dubai-monthly-cars" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] text-[var(--foreground)]/70 transition hover:-translate-y-0.5 hover:border-[var(--accent)] hover:text-[var(--accent)]">
                 <User className="h-4 w-4" aria-hidden="true" />
               </a>
             </div>
@@ -114,14 +114,14 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-3 text-sm text-[var(--foreground)]/70">
                 <Mail className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" aria-hidden="true" />
-                <a href="mailto:hello@dubaimonthlycars.ae" className="transition hover:text-[var(--accent)]">
-                  hello@dubaimonthlycars.ae
+                <a href="mailto:support@dubaimonthlycars.ae" className="transition hover:text-[var(--accent)]">
+                  support@dubaimonthlycars.ae
                 </a>
               </li>
               <li className="flex items-start gap-3 text-sm text-[var(--foreground)]/70">
                 <Phone className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" aria-hidden="true" />
-                <a href="tel:+97140000000" className="transition hover:text-[var(--accent)]" dir="ltr">
-                  +971 4 000 0000
+                <a href="tel:+97143334444" className="transition hover:text-[var(--accent)]" dir="ltr">
+                  +971 4 333 4444
                 </a>
               </li>
             </ul>
