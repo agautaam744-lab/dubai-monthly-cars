@@ -17,29 +17,62 @@ describe('translations', () => {
     expect(arKeys).toEqual(enKeys)
   })
 
-  it('has required common keys', () => {
-    // Use actual keys from the translation file
-    expect(translations.en).toHaveProperty('navbar.browseCars')
-    expect(translations.en).toHaveProperty('navbar.howItWorks')
-    expect(translations.en).toHaveProperty('navbar.myBookings')
-    expect(translations.en).toHaveProperty('navbar.support')
-    expect(translations.en).toHaveProperty('common.loading')
-    expect(translations.en).toHaveProperty('common.save')
-    expect(translations.en).toHaveProperty('common.cancel')
-    expect(translations.en).toHaveProperty('common.confirm')
+  it('has required navbar keys', () => {
+    // Keys that exist in the actual translations file (mix of nav.* and navbar.*)
+    const requiredKeys = [
+      'nav.home',
+      'nav.cars',
+      'nav.bookings',
+      'nav.dashboard',
+      'nav.support',
+      'nav.profile',
+      'nav.login',
+      'nav.logout',
+      'nav.admin',
+      'navbar.browseCars',
+      'navbar.howItWorks',
+      'navbar.support',
+      'navbar.myBookings',
+      'navbar.watchlist',
+      'navbar.conditionReport',
+      'navbar.damageReport',
+      'navbar.notifications',
+      'navbar.profile',
+      'navbar.login',
+      'navbar.dashboard',
+      'navbar.language',
+      'navbar.english',
+      'navbar.arabic',
+      'navbar.toggleTheme',
+    ]
     
-    expect(translations.ar).toHaveProperty('navbar.browseCars')
-    expect(translations.ar).toHaveProperty('navbar.howItWorks')
-    expect(translations.ar).toHaveProperty('navbar.myBookings')
-    expect(translations.ar).toHaveProperty('navbar.support')
-    expect(translations.ar).toHaveProperty('common.loading')
-    expect(translations.ar).toHaveProperty('common.save')
-    expect(translations.ar).toHaveProperty('common.cancel')
-    expect(translations.ar).toHaveProperty('common.confirm')
+    const enKeys = Object.keys(translations.en)
+    const arKeys = Object.keys(translations.ar)
+    
+    requiredKeys.forEach(key => {
+      expect(enKeys).toContain(key)
+      expect(arKeys).toContain(key)
+    })
+  })
+
+  it('has required common keys', () => {
+    const commonKeys = ['common.loading', 'common.save', 'common.cancel', 'common.confirm', 'common.back', 'common.next']
+    
+    const enKeys = Object.keys(translations.en)
+    const arKeys = Object.keys(translations.ar)
+    
+    commonKeys.forEach(key => {
+      expect(enKeys).toContain(key)
+      expect(arKeys).toContain(key)
+    })
   })
 
   it('translations are not empty strings', () => {
     Object.values(translations.en).forEach(value => {
+      expect(value).toBeTruthy()
+      expect(typeof value).toBe('string')
+    })
+    Object.values(translations.ar).forEach(value => {
       expect(value).toBeTruthy()
       expect(typeof value).toBe('string')
     })
