@@ -82,7 +82,7 @@ export default async function SupportPage() {
         {/* QUICK ACTIONS */}
         <div className="mb-8 grid gap-4 sm:grid-cols-2">
           <a
-            href="tel:+9718000000"
+            href="tel:+971800XXXX"
             className="group relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 transition-all hover:-translate-y-1 hover:border-emerald-500/40 hover:shadow-lg hover:shadow-emerald-500/10"
           >
             <div
@@ -98,7 +98,7 @@ export default async function SupportPage() {
                   24/7 Phone
                 </p>
                 <p className="mt-1 font-serif text-xl tracking-tight">
-                  Call 800-0000
+                  Call 800-XXXX
                 </p>
                 <p className="mt-0.5 text-xs text-[var(--muted-foreground)]">
                   In-app call support

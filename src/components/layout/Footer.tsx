@@ -120,8 +120,8 @@ export default function Footer() {
               </li>
               <li className="flex items-start gap-3 text-sm text-[var(--foreground)]/70">
                 <Phone className="mt-0.5 h-4 w-4 shrink-0 text-[var(--accent)]" aria-hidden="true" />
-                <a href="tel:+971500000000" className="transition hover:text-[var(--accent)]" dir="ltr">
-                  +971 50 000 0000
+                <a href="tel:+97140000000" className="transition hover:text-[var(--accent)]" dir="ltr">
+                  +971 4 000 0000
                 </a>
               </li>
             </ul>

@@ -1,7 +1,7 @@
 // Central site configuration for shared chrome (footer, legal pages).
 //
 // IMPORTANT: contact details below reuse only what already exists in the app.
-// - Support phone 800-0000 is the existing in-app placeholder (see RoadsideButton).
+// - Support phone uses placeholder 800-XXXX format.
 //   TODO(owner): replace with the real support number before production launch.
 // - No company email, address, or social URLs exist in the project, so they are
 //   intentionally omitted here. Add them when available — do not invent them.
@@ -11,9 +11,9 @@ export const siteConfig = {
   shortBrand: 'DMC',
   description:
     'Flexible monthly car rental in Dubai. Choose from Basic, Plus or Premium plans with home delivery.',
-  // Existing in-app placeholder support line (see src/app/support/page.tsx).
-  supportPhoneDisplay: '800-0000 (24/7)',
-  supportPhoneHref: 'tel:+9718000000',
+  // Support phone placeholder - replace with real number before launch
+  supportPhoneDisplay: '800-XXXX (24/7)',
+  supportPhoneHref: 'tel:+971800XXXX',
   linkGroups: [
     {
       title: 'Explore',
