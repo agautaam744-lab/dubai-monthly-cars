@@ -4,7 +4,7 @@
 // pages (/dashboard, /bookings, /payments, /admin, ...) are always served from
 // the network so account data is never written to the shared cache.
 const CACHE = 'dmc-v2'
-const CORE = ['/', '/cars', '/how-it-works', '/manifest.json', '/favicon.ico']
+const CORE = ['/', '/cars', '/how-it-works', '/manifest.json', '/icon-192.png']
 const PUBLIC_PATHS = new Set(['/', '/cars', '/how-it-works', '/login'])
 
 function isCacheable(request) {

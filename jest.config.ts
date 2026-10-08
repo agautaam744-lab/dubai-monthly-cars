@@ -12,7 +12,7 @@ module.exports = {
     '^@/types/(.*)$': '<rootDir>/src/types/$1',
     '^next/link$': '<rootDir>/src/__mocks__/nextLink.tsx',
   },
-  setupFilesAfterSetup: ['<rootDir>/jest.setup.ts'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.tsx'],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
