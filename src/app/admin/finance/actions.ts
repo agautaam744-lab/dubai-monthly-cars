@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-const adminRoles = ['super_admin', 'finance']
+const adminRoles = ['super_admin', 'admin', 'finance']
 
 async function checkAdmin() {
   const supabase = await createClient()
@@ -29,12 +29,13 @@ export async function retryFailedPayment(paymentId: string) {
     return { ok: false, error: 'Access denied' }
   }
 
+  // Reset to pending so the billing cron can pick it up (do NOT mark succeeded).
   const { error } = await check.supabase
     .from('payments')
     .update({
-      status: 'succeeded',
-      paid_at: new Date().toISOString(),
-      provider_payment_id: `retry_${Date.now()}`,
+      status: 'pending',
+      retry_count: 0,
+      failure_reason: null,
     })
     .eq('id', paymentId)
 
@@ -48,6 +49,32 @@ export async function refundPayment(paymentId: string) {
   const check = await checkAdmin()
   if (!check.ok || !check.supabase) {
     return { ok: false, error: 'Access denied' }
+  }
+
+  const { data: paymentToRefund } = await check.supabase
+    .from('payments')
+    .select('id, provider, provider_payment_id, amount_aed, status')
+    .eq('id', paymentId)
+    .single()
+
+  if (!paymentToRefund) {
+    return { ok: false, error: 'Payment not found' }
+  }
+
+  // Attempt real provider refund first; only mark refunded on success.
+  try {
+    if (paymentToRefund.provider === 'stripe' && paymentToRefund.provider_payment_id) {
+      const secretKey = process.env.STRIPE_SECRET_KEY
+      if (!secretKey) throw new Error('STRIPE_SECRET_KEY not configured')
+      const Stripe = (await import('stripe')).default
+      const stripe = new Stripe(secretKey)
+      await stripe.refunds.create({
+        payment_intent: paymentToRefund.provider_payment_id,
+        amount: Math.round(Number(paymentToRefund.amount_aed) * 100),
+      })
+    }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Provider refund failed' }
   }
 
   const { error } = await check.supabase

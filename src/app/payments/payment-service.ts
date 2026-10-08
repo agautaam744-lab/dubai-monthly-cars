@@ -59,11 +59,15 @@ export async function createPaymentIntent(data: PaymentIntentData): Promise<Paym
     return { ok: false, error: 'This booking is already active.' }
   }
 
-  if (booking.status === 'cancelled') {
-    return { ok: false, error: 'This booking has been cancelled.' }
+  if (booking.status === 'terminated') {
+    return { ok: false, error: 'This booking has been terminated.' }
   }
 
-  const depositAmount = Number(data.amountAed) || 0
+  // Never trust client amount: recompute from DB to prevent undercharge.
+  const totalAmount =
+    Number(booking.deposit_aed || 0) +
+    Number(booking.monthly_price_aed || 0) +
+    Number(booking.total_add_ons_aed || 0)
 
   try {
     switch (data.provider) {
@@ -72,7 +76,7 @@ export async function createPaymentIntent(data: PaymentIntentData): Promise<Paym
       case 'google_pay':
         return await createStripePaymentIntent({
           bookingId: data.bookingId,
-          amountAed: data.amountAed,
+          amountAed: totalAmount,
           currency: data.currency,
           paymentMethod: data.provider,
           returnUrl: data.returnUrl,
@@ -84,7 +88,7 @@ export async function createPaymentIntent(data: PaymentIntentData): Promise<Paym
       case 'tabby':
         return await createTabbySession({
           bookingId: data.bookingId,
-          amountAed: data.amountAed,
+          amountAed: totalAmount,
           currency: data.currency,
           returnUrl: data.returnUrl,
           customerEmail: data.customerEmail,
@@ -121,7 +125,7 @@ async function createStripePaymentIntent(data: {
       enabled: true,
       allow_redirects: 'never'
     },
-    payment_method_types: ['card'],
+    ...(data.paymentMethod === 'stripe' ? { payment_method_types: ['card'] } : {}),
     receipt_email: data.customerEmail,
     metadata: {
       booking_id: data.bookingId,
@@ -200,6 +204,21 @@ async function createTabbySession(data: {
 
 export async function refundPayment(paymentId: string): Promise<{ ok: boolean; error?: string }> {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { ok: false, error: 'You must be logged in.' }
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile || !['super_admin', 'admin', 'finance'].includes(profile.role)) {
+    return { ok: false, error: 'Access denied.' }
+  }
+
   const { data: payment, error: fetchError } = await supabase
     .from('payments')
     .select('*')
@@ -210,21 +229,28 @@ export async function refundPayment(paymentId: string): Promise<{ ok: boolean; e
     return { ok: false, error: 'Payment not found' }
   }
 
-  if (payment.provider === 'stripe') {
-    const stripe = await getStripeClient()
-    await stripe.refunds.create({
-      payment_intent: payment.provider_payment_id,
-      amount: Math.round(Number(payment.amount_aed) * 100)
-    })
-  } else if (payment.provider === 'tabby') {
-    const { secretKey, baseUrl } = await getTabbyClient()
-    await fetch(`${baseUrl}/api/v2/payments/${payment.provider_payment_id}/refund`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${secretKey}`,
-        'Content-Type': 'application/json'
+  try {
+    if (payment.provider === 'stripe') {
+      const stripe = await getStripeClient()
+      await stripe.refunds.create({
+        payment_intent: payment.provider_payment_id,
+        amount: Math.round(Number(payment.amount_aed) * 100)
+      })
+    } else if (payment.provider === 'tabby') {
+      const { secretKey, baseUrl } = await getTabbyClient()
+      const res = await fetch(`${baseUrl}/api/v2/payments/${payment.provider_payment_id}/refund`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${secretKey}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      if (!res.ok) {
+        return { ok: false, error: 'Tabby refund failed' }
       }
-    })
+    }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : 'Refund failed' }
   }
 
   await supabase
@@ -238,6 +264,21 @@ export async function refundPayment(paymentId: string): Promise<{ ok: boolean; e
 
 export async function retryFailedPayment(paymentId: string): Promise<{ ok: boolean; error?: string }> {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return { ok: false, error: 'You must be logged in.' }
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile || !['super_admin', 'admin', 'finance'].includes(profile.role)) {
+    return { ok: false, error: 'Access denied.' }
+  }
+
   const { data: payment } = await supabase
     .from('payments')
     .select('*')

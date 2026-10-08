@@ -40,6 +40,10 @@ export async function completePayment(
     return { ok: false, error: 'This booking has been cancelled.' }
   }
 
+  if (booking.status === 'terminated') {
+    return { ok: false, error: 'This booking has been terminated.' }
+  }
+
   const depositAmount = Number(booking.deposit_aed || 0)
   const rentAmount = Number(booking.monthly_price_aed || 0) + Number(booking.total_add_ons_aed || 0)
   const totalAmount = depositAmount + rentAmount
@@ -100,6 +104,10 @@ export async function completeMockPayment(bookingId: string) {
 
   if (booking.status === 'cancelled') {
     return { ok: false, error: 'This booking has been cancelled.' }
+  }
+
+  if (booking.status === 'terminated') {
+    return { ok: false, error: 'This booking has been terminated.' }
   }
 
   const now = new Date().toISOString()

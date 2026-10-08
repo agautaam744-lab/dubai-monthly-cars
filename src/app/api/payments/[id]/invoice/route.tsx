@@ -22,6 +22,8 @@ export async function GET(
     .select(
       `
       id,
+      customer_id,
+      payment_id,
       invoice_number,
       subtotal_aed,
       vat_aed,
@@ -34,6 +36,7 @@ export async function GET(
       customer_snapshot,
       bookings (
         id,
+        customer_id,
         start_date,
         duration_months,
         vehicles ( make, model, year )
@@ -45,6 +48,27 @@ export async function GET(
 
   if (error || !invoice) {
     return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
+  }
+
+  // Ownership check: owner or staff only (prevents IDOR via guessed UUID).
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  const staffRoles = ["super_admin", "admin", "finance", "support"];
+  const isStaff = !!profile && staffRoles.includes(profile.role);
+  const bookingCustomerId = Array.isArray(invoice.bookings)
+    ? invoice.bookings[0]?.customer_id
+    : (invoice.bookings as { customer_id?: string } | null)?.customer_id;
+
+  if (
+    invoice.customer_id !== user.id &&
+    bookingCustomerId !== user.id &&
+    !isStaff
+  ) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const buffer = await renderToBuffer(
