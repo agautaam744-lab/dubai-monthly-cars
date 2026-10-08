@@ -8,8 +8,8 @@ describe('siteConfig', () => {
   })
 
   it('has support phone config', () => {
-    expect(siteConfig.supportPhoneDisplay).toBe('800-DMC-CARS (24/7)')
-    expect(siteConfig.supportPhoneHref).toBe('tel:+9718003622277')
+    expect(siteConfig.supportPhoneDisplay).toBe('800-0000 (24/7)')
+    expect(siteConfig.supportPhoneHref).toBe('tel:+9718000000')
   })
 
   it('has link groups', () => {

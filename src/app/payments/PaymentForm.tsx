@@ -16,7 +16,7 @@ import {
   Sparkles,
   ChevronRight,
   Lock,
-  Apple,
+  Smartphone,
   Loader2,
   CheckCircle2,
 } from 'lucide-react'
@@ -81,7 +81,7 @@ function formatAED(value: number) {
 
 const paymentMethods = [
   { id: 'card', label: 'Credit / Debit Card', icon: CreditCard, tag: 'Visa Mastercard' },
-  { id: 'apple', label: 'Apple Pay', icon: Apple, tag: 'One-tap' },
+  { id: 'apple', label: 'Apple Pay', icon: Smartphone, tag: 'One-tap' },
   { id: 'google', label: 'Google Pay', icon: Sparkles, tag: 'One-tap' },
 ] as const
 
@@ -201,8 +201,8 @@ export default function PaymentForm({ booking, addOns }: Props) {
     })
   }, [])
 
-  // Fetch client secret when payment method is card
-  const fetchClientSecret = useCallback(async () => {
+  // Fetch client secret for the selected provider (amount is recomputed server-side).
+  const fetchClientSecret = useCallback(async (provider: 'stripe' | 'apple_pay' | 'google_pay' = 'stripe') => {
     if (clientSecret) return
 
     setSubmitting(true)
@@ -210,7 +210,7 @@ export default function PaymentForm({ booking, addOns }: Props) {
 
     try {
       const result = await completePayment(booking.id, {
-        provider: 'stripe',
+        provider,
         amountAed: total,
         returnUrl: `${window.location.origin}/bookings?paid=success`,
       })
@@ -235,17 +235,22 @@ export default function PaymentForm({ booking, addOns }: Props) {
     }
   }, [booking.id, total, clientSecret])
 
-  // Fetch client secret when user selects card payment
+  // Fetch client secret when user selects a payment method
   useEffect(() => {
-    if (method === 'card' && !clientSecret) {
-      fetchClientSecret()
+    if (!clientSecret) {
+      if (method === 'card') fetchClientSecret('stripe')
+      else if (method === 'apple') fetchClientSecret('apple_pay')
+      else if (method === 'google') fetchClientSecret('google_pay')
     }
   }, [method, fetchClientSecret, clientSecret])
 
   const handlePay = async () => {
-    if (method !== 'card') {
-      // For Apple/Google Pay - redirect to Stripe checkout
-      fetchClientSecret()
+    if (method === 'apple') {
+      await fetchClientSecret('apple_pay')
+      return
+    }
+    if (method === 'google') {
+      await fetchClientSecret('google_pay')
       return
     }
 

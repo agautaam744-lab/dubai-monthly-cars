@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import Footer from '@/components/layout/Footer'
 import { LanguageProvider } from '@/contexts/LanguageContext'
-import { ThemeProvider } from '@/components/shared/ThemeProvider'
+import { siteConfig } from '@/lib/site'
 
 // Mock window.matchMedia for next-themes (must be before render)
 Object.defineProperty(window, 'matchMedia', {
@@ -19,24 +19,27 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 
-// Mock lucide-react icons
+// Mock lucide-react icons (must match Footer imports)
 jest.mock('lucide-react', () => ({
   Car: () => <svg data-testid="car-icon" />,
   Mail: () => <svg data-testid="mail-icon" />,
   Phone: () => <svg data-testid="phone-icon" />,
   MapPin: () => <svg data-testid="mappin-icon" />,
-  Globe2: () => <svg data-testid="globe-icon" />,
-  Send: () => <svg data-testid="send-icon" />,
-  User: () => <svg data-testid="user-icon" />,
+  Globe: () => <svg data-testid="globe-icon" />,
+  AtSign: () => <svg data-testid="atsign-icon" />,
+  Briefcase: () => <svg data-testid="briefcase-icon" />,
+}))
+
+// next-themes touches window.matchMedia on mount; isolate Footer from it.
+jest.mock('@/components/shared/ThemeProvider', () => ({
+  ThemeProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }))
 
 function renderFooter() {
   return render(
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-      <LanguageProvider>
-        <Footer />
-      </LanguageProvider>
-    </ThemeProvider>
+    <LanguageProvider>
+      <Footer />
+    </LanguageProvider>
   )
 }
 
@@ -48,7 +51,8 @@ describe('Footer', () => {
 
   it('renders support phone', () => {
     renderFooter()
-    expect(screen.getByText('+971 4 333 4444')).toBeInTheDocument()
+    expect(screen.getByText('800-0000')).toBeInTheDocument()
+    expect(screen.getByText('800-0000').closest('a')).toHaveAttribute('href', siteConfig.supportPhoneHref)
   })
 
   it('renders email', () => {
@@ -63,9 +67,9 @@ describe('Footer', () => {
 
   it('renders social links', () => {
     renderFooter()
-    expect(screen.getByLabelText('Instagram')).toHaveAttribute('href', 'https://instagram.com/dubaimonthlycars')
-    expect(screen.getByLabelText('Twitter')).toHaveAttribute('href', 'https://twitter.com/dubaimonthlycar')
-    expect(screen.getByLabelText('LinkedIn')).toHaveAttribute('href', 'https://linkedin.com/company/dubai-monthly-cars')
+    expect(screen.getByLabelText('Instagram')).toHaveAttribute('href', 'https://instagram.com')
+    expect(screen.getByLabelText('Twitter')).toHaveAttribute('href', 'https://twitter.com')
+    expect(screen.getByLabelText('LinkedIn')).toHaveAttribute('href', 'https://linkedin.com')
   })
 
   it('renders navigation sections', () => {

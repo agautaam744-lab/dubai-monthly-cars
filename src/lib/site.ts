@@ -12,8 +12,9 @@ export const siteConfig = {
   description:
     'Flexible monthly car rental in Dubai. Choose from Basic, Plus or Premium plans with home delivery.',
   // Support phone placeholder - replace with real number before launch
-  supportPhoneDisplay: '800-DMC-CARS (24/7)',
-  supportPhoneHref: 'tel:+9718003622277',
+  // TODO(owner): set the real 24/7 support number here and in README.
+  supportPhoneDisplay: '800-0000 (24/7)',
+  supportPhoneHref: 'tel:+9718000000',
   linkGroups: [
     {
       title: 'Explore',

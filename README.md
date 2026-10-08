@@ -196,11 +196,11 @@ vercel --prod
 
 | Item | Current Value | Action |
 |------|---------------|--------|
-| Support Phone (display) | `800-XXXX (24/7)` | Add real toll-free number |
-| Support Phone (href) | `tel:+971800XXXX` | Add real number |
-| Footer Phone | `+971 4 000 0000` | Add real landline |
-| Company Email | `hello@dubaimonthlycars.ae` | Verify/configure |
-| Social Links | Instagram/Twitter/LinkedIn placeholders | Add real URLs |
+| Support Phone (display) | `800-0000 (24/7)` (`src/lib/site.ts`) | Add real toll-free number |
+| Support Phone (href) | `tel:+9718000000` (`src/lib/site.ts`) | Add real number |
+| Footer Email | `support@dubaimonthlycars.ae` (unverified) | Verify/configure mailbox |
+| Footer Address | `Dubai, United Arab Emirates` (generic) | Add real office address + Ejari |
+| Social Links | `instagram.com`, `twitter.com`, `linkedin.com` (generic homepages) | Add real profile URLs |
 
 ## Scripts
 
