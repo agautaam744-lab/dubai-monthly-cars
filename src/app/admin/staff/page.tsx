@@ -46,7 +46,7 @@ export default async function AdminStaffPage() {
     { label: 'Fleet Managers', value: staff.filter((s) => s.role === 'fleet_manager').length, icon: Briefcase, color: 'text-blue-500 bg-blue-500/10' },
     { label: 'Support', value: staff.filter((s) => s.role === 'support').length, icon: Headphones, color: 'text-yellow-500 bg-yellow-500/10' },
     { label: 'Finance', value: staff.filter((s) => s.role === 'finance').length, icon: DollarSign, color: 'text-green-500 bg-green-500/10' },
-    { label: 'Delivery', value: staff.filter((s) => s.role === 'delivery').length, icon: Truck, color: 'text-orange-500 bg-orange-500/10' },
+    { label: 'Delivery', value: staff.filter((s) => s.role === 'delivery_staff' || s.role === 'delivery').length, icon: Truck, color: 'text-orange-500 bg-orange-500/10' },
   ]
 
   const roleConfig: Record<string, { label: string; color: string }> = {
@@ -54,6 +54,7 @@ export default async function AdminStaffPage() {
     fleet_manager: { label: 'Fleet Manager', color: 'bg-blue-500/10 text-blue-600' },
     finance: { label: 'Finance', color: 'bg-green-500/10 text-green-600' },
     support: { label: 'Support', color: 'bg-yellow-500/10 text-yellow-600' },
+    delivery_staff: { label: 'Delivery Staff', color: 'bg-orange-500/10 text-orange-600' },
     delivery: { label: 'Delivery Staff', color: 'bg-orange-500/10 text-orange-600' },
   }
 
@@ -190,7 +191,7 @@ export default async function AdminStaffPage() {
                     <option value="support">Support</option>
                     <option value="fleet_manager">Fleet Manager</option>
                     <option value="finance">Finance</option>
-                    <option value="delivery">Delivery</option>
+                    <option value="delivery_staff">Delivery Staff</option>
                     <option value="super_admin">Super Admin</option>
                   </select>
                   <button

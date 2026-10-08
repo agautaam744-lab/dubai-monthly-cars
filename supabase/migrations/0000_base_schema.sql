@@ -784,7 +784,7 @@ create policy "documents_select_staff_all" on public.documents
     exists (
       select 1 from public.profiles p
       where p.id = auth.uid()
-        and p.role in ('super_admin', 'fleet_manager', 'finance', 'support', 'delivery')
+        and p.role in ('super_admin', 'fleet_manager', 'finance', 'support', 'delivery', 'delivery_staff')
     )
   );
 
@@ -801,7 +801,7 @@ create policy "documents_update_staff_all" on public.documents
     exists (
       select 1 from public.profiles p
       where p.id = auth.uid()
-        and p.role in ('super_admin', 'fleet_manager', 'finance', 'support', 'delivery')
+        and p.role in ('super_admin', 'fleet_manager', 'finance', 'support', 'delivery', 'delivery_staff')
     )
   );
 
