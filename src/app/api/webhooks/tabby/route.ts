@@ -76,8 +76,8 @@ async function processTabbyEvent(event: any) {
     return
   }
 
-  if (booking.status === 'cancelled') {
-    console.error('[tabby-webhook] Payment received for cancelled booking', bookingId, '- refund manually')
+  if (booking.status === 'cancelled' || booking.status === 'terminated') {
+    console.error('[tabby-webhook] Payment received for', booking.status, 'booking', bookingId, '- refund manually')
     return
   }
 
@@ -150,7 +150,7 @@ async function processTabbyEvent(event: any) {
     .from('bookings')
     .update({ status: 'active', updated_at: paidAt })
     .eq('id', booking.id)
-    .neq('status', 'cancelled')
+    .not('status', 'in', '(cancelled,terminated)')
 
   if (updateError) {
     throw new Error(`booking update failed: ${updateError.message}`)

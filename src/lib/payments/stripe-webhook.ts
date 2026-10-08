@@ -91,9 +91,9 @@ async function handlePaymentSucceeded(pi: Stripe.PaymentIntent) {
     return
   }
 
-  if (booking.status === 'cancelled') {
+  if (booking.status === 'cancelled' || booking.status === 'terminated') {
     console.error(
-      `[stripe-webhook] payment received for cancelled booking ${bookingId} (pi ${pi.id}) - refund manually`
+      `[stripe-webhook] payment received for ${booking.status} booking ${bookingId} (pi ${pi.id}) - refund manually`
     )
     return
   }
@@ -145,7 +145,7 @@ async function handlePaymentSucceeded(pi: Stripe.PaymentIntent) {
     .from('bookings')
     .update({ status: 'active', updated_at: paidAt })
     .eq('id', booking.id)
-    .neq('status', 'cancelled')
+    .not('status', 'in', '(cancelled,terminated)')
 
   if (updateError) {
     throw new Error(`booking update failed: ${updateError.message}`)
